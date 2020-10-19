@@ -22,8 +22,6 @@ from collections import namedtuple
 from enum import Enum, IntEnum, unique
 import time
 
-from .ip_connection_helper import base58decode, pack_payload, unpack_payload
-
 @unique
 class FunctionID(IntEnum):
     set_input = 0,

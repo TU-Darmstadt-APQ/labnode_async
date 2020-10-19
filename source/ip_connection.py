@@ -145,7 +145,7 @@ class IPConnectionAsync(object):
 
     async def __read_packet(self):
         try:
-            with async_timeout.timeout(self.__timeout):
+            with async_timeout.timeout(self.__timeout) as cm:
                 try:
                     data = await self.__reader.readuntil(self.SEPARATOR)
                     data = cbor.loads(self.__decode_data(data))
@@ -157,6 +157,11 @@ class IPConnectionAsync(object):
                   # Raised by FunctionID(key)
                   self.logger.error('Received invalid function id in data: %(data)s', {'data': data})
                   return data
+                except asyncio.CancelledError:
+                    if cm.expired:
+                        raise asyncio.TimeoutError() from None
+                    else:
+                        raise
                 except:
                   # TODO: Add explicit error handling for CBOR
                   self.logger.exception('Error while reading packet.')
