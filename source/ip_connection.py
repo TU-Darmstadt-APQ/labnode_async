@@ -198,11 +198,22 @@ class IPConnectionAsync(object):
         self.__host = None
 
     async def __close_transport(self):
-        self.__reader = None
         # Flush data
-        if self.__writer is not None:
+        try:
             self.__writer.write_eof()
             await self.__writer.drain()
             self.__writer.close()
-            self.__writer = None
-
+            await self.__writer.wait_closed()
+        except OSError as exc:
+            if exc.errno == errno.ENOTCONN:
+                pass # Socket is no longer connected, so we can't send the EOF.
+            else:
+                raise
+        finally:
+            self.__writer, self.__reader = None, None
+            # Cancel all pending requests, that have not been resolved
+            for request_id, future in self.__pending_requests.items():
+                if not future.done():
+                    future.set_exception(NotConnectedError('Sensornode IP connection closed.'))
+            self.__pending_requests = {}
+            self.__logger.info('Sensornode IP connection closed.')
