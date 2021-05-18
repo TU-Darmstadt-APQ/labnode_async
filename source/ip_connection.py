@@ -81,14 +81,6 @@ class IPConnectionAsync(object):
 
         self.__logger = logging.getLogger(__name__)
 
-    def __get_sequence_number(self):
-        # The maximum sequency number is a uint8_t. That means 255.
-        # We only use the range of 0 to 23, because that requires only
-        # one byte when CBOR encoded
-        self.__sequence_number = ((self.__sequence_number +1) % 24)
-
-        return self.__sequence_number
-
     def __encode_data(self, data):
       return bytearray(cobs.encode(data) + self.SEPARATOR)
 
