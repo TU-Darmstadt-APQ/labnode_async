@@ -24,7 +24,7 @@ import logging
 
 # All messages are COBS encoded, while the data is serialized using the CBOR protocol
 from cobs import cobs
-import cbor
+import cbor2 as cbor
 
 from .devices import FunctionID, DeviceIdentifier
 
@@ -122,7 +122,8 @@ class IPConnectionAsync(object):
             with async_timeout.timeout(self.__timeout) as cm:
                 try:
                     data = await self.__reader.readuntil(self.SEPARATOR)
-                    data = cbor.loads(self.__decode_data(data))
+                    data = self.__decode_data(data)
+                    data = cbor.loads(data)
                     data = {FunctionID(key) : value for key, value in data.items()}
                     self.logger.debug('Received data: %(data)s', {'data': data})
 
