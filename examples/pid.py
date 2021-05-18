@@ -31,12 +31,9 @@ from source.pid_controller import PID_Controller, FeedbackDirection
 from binascii import hexlify  # To print the MAC address
 
 ipcon = IPConnectionAsync()
-loop = asyncio.get_event_loop()
-callback_queue = asyncio.Queue()
-
 running_tasks = []
 
-async def process_callbacks():
+async def process_callbacks(callback_queue):
     """
     This infinite loop will print all callbacks.
     It waits for packets from the callback queue,
@@ -49,31 +46,38 @@ async def process_callbacks():
     except asyncio.CancelledError:
         logging.getLogger(__name__).debug('Callback queue canceled')
 
-async def stop_loop():
+async def shutdown():
     # Clean up: Disconnect ip connection and stop the consumers
-    await ipcon.disconnect()
     for task in running_tasks:
         task.cancel()
     await asyncio.gather(*running_tasks)
-    loop.stop()    
+    await ipcon.disconnect()    # Disconnect the ip connection last to allow cleanup
 
 def error_handler(task):
     try:
       task.result()
     except Exception:
-      asyncio.ensure_future(stop_loop())
+      asyncio.ensure_future(shutdown())
 
 async def main():
     try: 
-#e        await ipcon.connect(host='127.0.0.1', port=4223)
+#        await ipcon.connect(host='127.0.0.1', port=4223)
 #        await ipcon.connect(host='10.0.0.131', port=4223)
         await ipcon.connect(host='192.168.1.94', port=4223)
-        running_tasks.append(asyncio.ensure_future(process_callbacks()))
+        callback_queue = asyncio.Queue()
+        running_tasks.append(asyncio.ensure_future(process_callbacks(callback_queue)))
         running_tasks[-1].add_done_callback(error_handler)  # Add error handler to catch exceptions
         if (await ipcon.get_device_id() == DeviceIdentifier.PID):
             pid_controller = PID_Controller(ipcon)
             # Test setters
             #await pid_controller.set_serial(1)
+            # In this example our input temperature range of the sensor is:
+            # -40 °C - 125 °C and will be in Q16.16 (unsigned) notation,
+            # this means it will be in the range of [0,1] in Q16.16 notation in units of (1/165 K)
+            # The output is a 12 bit DAC, so the output must be interpreted in Q11.20 (11 bits + 1 sign bit)
+            # notation.
+            # In order to convert from Q16 to Q20 we need divide by 2**16 and multiply by 2**20
+            # As the units coming from the sensor are in (1/165 K) we need to muliply k_(pid) by 165.
             #await pid_controller.set_kp(300 * 165 / 2**16 * 2**20)
             #await pid_controller.set_ki(1.0 * 165 / 2**16 * 2**20)
             #await pid_controller.set_kd(2.0 * 165 / 2**16 * 2**20)
@@ -104,18 +108,14 @@ async def main():
     except ConnectionRefusedError:
         logging.getLogger(__name__).error('Could not connect to remote target. Connection refused. Is the device up?')
     except asyncio.CancelledError:
-        logging.getLogger(__name__).debug('Stopped the main loop')
+        print('Stopped the main loop')
     finally:
-        asyncio.ensure_future(stop_loop())
+        logging.getLogger(__name__).debug('Shutting down the main task')
+        asyncio.ensure_future(shutdown())
 
 # Report all mistakes managing asynchronous resources.
 warnings.simplefilter('always', ResourceWarning)
 logging.basicConfig(level=logging.INFO)    # Enable logs from the ip connection. Set to debug for even more info
 
-# Start the main loop, then run the async loop forever
-running_tasks.append(asyncio.ensure_future(main()))
-running_tasks[-1].add_done_callback(error_handler)  # Add error handler to catch exceptions
-loop.set_debug(enabled=True)    # Raise all execption and log all callbacks taking longer than 100 ms
-#loop.set_exception_handler(handle_exception)
-loop.run_forever()
-loop.close()
+# Start the main loop and run the async loop forever
+asyncio.run(main(),debug=True)
