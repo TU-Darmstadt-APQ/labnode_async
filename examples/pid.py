@@ -30,8 +30,8 @@ from source.pid_controller import PID_Controller, FeedbackDirection
 
 from binascii import hexlify  # To print the MAC address
 
+ipcon = IPConnectionAsync()
 loop = asyncio.get_event_loop()
-ipcon = IPConnectionAsync(loop=loop)
 callback_queue = asyncio.Queue()
 
 running_tasks = []

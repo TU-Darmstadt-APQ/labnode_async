@@ -68,16 +68,14 @@ class IPConnectionAsync(object):
     def logger(self):
         return self.__logger
 
-    def __init__(self, loop):
-        self.__loop = loop
+    def __init__(self, host=None, port=4223):
         self.__running_tasks = []
         self.__reader, self.__writer = None, None
-        self.__host = None
+        self.__host = host
+        self.__port = port
         self.__request_id_queue = None
         self.__timeout = DEFAULT_WAIT_TIMEOUT
         self.__pending_requests = {}
-
-        self.__reply_queue = asyncio.Queue(maxsize=20, loop=self.__loop)
 
         self.__logger = logging.getLogger(__name__)
 
@@ -170,17 +168,21 @@ class IPConnectionAsync(object):
             self.logger.info('Sensornode IP connection closed')
         except Exception as e:
             self.logger.exception("Error while running main_loop")
+    async def connect(self, host=None, port=None):
+        if host is not None:
+            self.__host = host
+        if port is not None:
+            self.__port = port
 
-    async def connect(self, host, port=4223):
-        self.__host = host
-        self.__reader, self.__writer = await asyncio.open_connection(host, port, loop=self.__loop)
-        self.__running_tasks.append(self.__loop.create_task(self.main_loop()))
         # The maximum sequency number is a uint8_t. That means 255.
         # We only use the range of 0 to 23, because that requires only
         # one byte when CBOR encoded
         self.__request_id_queue = asyncio.Queue(maxsize=24)
         for i in range(24):
             self.__request_id_queue.put_nowait(i)
+
+        self.__reader, self.__writer = await asyncio.open_connection(self.__host, self.__port)
+        self.__running_tasks.append(asyncio.create_task(self.main_loop()))
 
     async def disconnect(self):
         for task in self.__running_tasks:
