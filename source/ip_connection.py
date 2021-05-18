@@ -73,7 +73,7 @@ class IPConnectionAsync(object):
         self.__running_tasks = []
         self.__reader, self.__writer = None, None
         self.__host = None
-        self.__sequence_number = 0
+        self.__request_id_queue = None
         self.__timeout = DEFAULT_WAIT_TIMEOUT
         self.__pending_requests = {}
 
@@ -107,41 +107,23 @@ class IPConnectionAsync(object):
 
     async def send_request(self, data, response_expected=False):
         # If we are waiting for a response, send the request, then pass on the response as a future
-        sequence_number =  self.__get_sequence_number()
-        data[FunctionID.sequence_number] = sequence_number
         self.logger.debug('Sending data: %(payload)s', {'payload': data})
         request = self.__encode_data(
           cbor.dumps(data)
         )
         self.logger.debug('Sending request: %(payload)s', {'payload': request})
-        self.__writer.write(request)
-        if response_expected:
-            self.logger.debug('Waiting for reply for request number %(sequence_number)s.', {'sequence_number': sequence_number})
-            response = await self.__get_response(sequence_number)
-            self.logger.debug('Got reply for request number %(sequence_number)s: %(response)s', {'sequence_number': sequence_number, 'response': response})
-            return response
-
-    async def __get_response(self, sequence_number):
-        # Create a lock for the sequence number
-        self.__pending_requests[sequence_number] = asyncio.Condition()
-        async with async_timeout.timeout(self.__timeout) as cm:
-            # Aquire the lock
-            with await self.__pending_requests[sequence_number]:
-                try:
-                    # wait for the lock to be released
-                    await self.__pending_requests[sequence_number].wait()
-                    # Once released the worker (streamreader) will have put the packet in the queue
-                    response = await self.__reply_queue.get()
-                    del response[FunctionID.sequence_number]
-                    return response
-                except asyncio.CancelledError:
-                    if cm.expired:
-                        raise asyncio.TimeoutError() from None
-                    else:
-                        raise
-                finally:
-                    # Remove the lock
-                    del self.__pending_requests[sequence_number]
+        try:
+            self.__writer.write(request)
+            if response_expected:
+                self.logger.debug('Waiting for reply for request number %(request_id)s.', {'request_id': request_id})
+                # The future will be resolved by the main_loop() and __process_packet()
+                self.__pending_requests[request_id] = asyncio.Future()
+                response  = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
+                self.logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
+                return response
+        finally:
+            # Return the sequence number
+            self.__request_id_queue.put_nowait(request_id)
 
     async def __read_packet(self):
         try:
@@ -171,19 +153,14 @@ class IPConnectionAsync(object):
 
     async def __process_packet(self, data):
         try:
-            sequence_number = data.get(FunctionID.sequence_number)
+            request_id = data.get(FunctionID.request_id)
         except AttributeError:
             self.logger.error('Received invalid data: %(data)s', {'data': data})
         else:
             try:
-                with await self.__pending_requests[sequence_number]:
-                    self.__pending_requests[sequence_number].notify()
-                    self.__reply_queue.put_nowait(data)
-                await asyncio.sleep(0)
-            except asyncio.QueueFull:
-                # TODO: log a warning, that we are dropping packets
-                self.__self.__reply_queue.get_nowait()
-                self.__self.__reply_queue.put_nowait(payload)
+                # Get the future and mark it as done
+                future = self.__pending_requests.pop(request_id)
+                future.set_result(data)
             except KeyError:
                 # Drop the packet, because it is not our sequence number
                 pass
@@ -205,6 +182,12 @@ class IPConnectionAsync(object):
         self.__host = host
         self.__reader, self.__writer = await asyncio.open_connection(host, port, loop=self.__loop)
         self.__running_tasks.append(self.__loop.create_task(self.main_loop()))
+        # The maximum sequency number is a uint8_t. That means 255.
+        # We only use the range of 0 to 23, because that requires only
+        # one byte when CBOR encoded
+        self.__request_id_queue = asyncio.Queue(maxsize=24)
+        for i in range(24):
+            self.__request_id_queue.put_nowait(i)
 
     async def disconnect(self):
         for task in self.__running_tasks:

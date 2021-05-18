@@ -49,7 +49,7 @@ class FunctionID(IntEnum):
 
     callback_update_value = 22,
 
-    sequence_number = 23,
+    request_id = 23,
     get_mac_address = 24,
     set_mac_address = 25,
     get_auto_resume = 26,
