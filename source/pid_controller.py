@@ -135,7 +135,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_auto_resume, bool(value)))
         if result == ErrorCode.valueError:
-          raise ValueError()
+            raise ValueError()
 
     async def set_lower_output_limit(self, limit):
         """
@@ -143,7 +143,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_lower_output_limit, limit))
         if result == ErrorCode.valueError:
-          raise ValueError("Invalid limit")
+            raise ValueError("Invalid limit")
 
     async def set_upper_output_limit(self, limit):
         """
@@ -151,7 +151,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_upper_output_limit, limit))
         if result == ErrorCode.valueError:
-          raise ValueError("Invalid limit")
+            raise ValueError("Invalid limit")
 
     async def set_timeout(self, timeout):
         """
@@ -167,7 +167,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_gain, bool(enable)))
         if result == ErrorCode.valueError:
-          raise ValueError()    # TODO: There is no error yet
+            raise ValueError()    # TODO: There is no error yet
 
     async def set_pid_feedback_direction(self, feedback):
         """
@@ -179,7 +179,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_direction, bool(feedback)))
         if result == ErrorCode.valueError:
-          raise ValueError()    # TODO: There is no error yet
+            raise ValueError()    # TODO: There is no error yet
 
     async def set_output(self, value):
         """
@@ -191,7 +191,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_output, int(value)))
         if result == ErrorCode.valueError:
-          raise ValueError()    # TODO: There is no error yet
+            raise ValueError()    # TODO: There is no error yet
 
     async def set_enabled(self, enabled):
         """
@@ -203,7 +203,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_enabled, bool(enabled)))
         if result == ErrorCode.valueError:
-          raise ValueError()    # TODO: There is no error yet
+            raise ValueError()    # TODO: There is no error yet
 
     async def set_kp(self, kp):
         """
@@ -219,7 +219,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_ki, int(ki)))
         if result == ErrorCode.valueError:
-          raise ValueError()
+            raise ValueError()
 
     async def set_kd(self, kd):
         """
@@ -227,7 +227,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_kd, int(kd)))
         if result == ErrorCode.valueError:
-          raise ValueError()
+            raise ValueError()
 
     async def set_input(self, value):
         """
@@ -238,7 +238,7 @@ class PID_Controller(object):
         result = await __send_multi_request({FunctionID.set_input: int(value)})
         error_code = ErrorCode(result[FunctionID.set_input])
         if error_code == ErrorCode.valueError:
-          raise ValueError()
+            raise ValueError()
 
         return result[FunctionID.callback_update_value]
 
@@ -248,7 +248,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_setpoint, int(value)))
         if result == ErrorCode.valueError:
-          raise ValueError("Invalid setpoint")
+            raise ValueError("Invalid setpoint")
 
     async def set_calibration_offset(self):
         """
@@ -257,7 +257,7 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_calibration_offset, float(value)))
         if result == ErrorCode.valueError:
-          raise ValueError("Invalid calibration offset")
+            raise ValueError("Invalid calibration offset")
 
     async def reset(self):
         """
@@ -277,6 +277,6 @@ class PID_Controller(object):
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_serial_number, int(serial)))
         if result == ErrorCode.valueError:
-          raise ValueError("Invalid serial number")
+            raise ValueError("Invalid serial number")
 
     
