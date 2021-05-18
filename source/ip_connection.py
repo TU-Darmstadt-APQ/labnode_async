@@ -97,6 +97,8 @@ class IPConnectionAsync(object):
 
     async def send_request(self, data, response_expected=False):
         # If we are waiting for a response, send the request, then pass on the response as a future
+        request_id =  await self.__request_id_queue.get()
+        data[FunctionID.request_id] = request_id
         self.logger.debug('Sending data: %(payload)s', {'payload': data})
         request = self.__encode_data(
           cbor.dumps(data)
@@ -120,10 +122,12 @@ class IPConnectionAsync(object):
             with async_timeout.timeout(self.__timeout) as cm:
                 try:
                     data = await self.__reader.readuntil(self.SEPARATOR)
+                    self.logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
                     data = self.__decode_data(data)
+                    self.logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
                     data = cbor.loads(data)
                     data = {FunctionID(key) : value for key, value in data.items()}
-                    self.logger.debug('Received data: %(data)s', {'data': data})
+                    self.logger.debug('Decoded received data: %(data)s', {'data': data})
 
                     return data
                 except ValueError:
@@ -164,10 +168,10 @@ class IPConnectionAsync(object):
                 payload = await self.__read_packet()
                 if payload is not None:
                     await self.__process_packet(payload)
-        except asyncio.CancelledError:
-            self.logger.info('Sensornode IP connection closed')
         except Exception as e:
-            self.logger.exception("Error while running main_loop")
+            self.logger.exception("Error while running main_loop: %s", e)
+        finally:
+            await self.__close_transport()
     async def connect(self, host=None, port=None):
         if host is not None:
             self.__host = host
@@ -189,12 +193,11 @@ class IPConnectionAsync(object):
             task.cancel()
         try:
             await asyncio.gather(*self.__running_tasks)
-            return await self.__flush()
         except asyncio.CancelledError:
             pass
         self.__host = None
 
-    async def __flush(self):
+    async def __close_transport(self):
         self.__reader = None
         # Flush data
         if self.__writer is not None:

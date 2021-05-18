@@ -20,6 +20,7 @@
 from collections import namedtuple
 from decimal import Decimal
 from enum import Enum, IntEnum, unique
+import logging
 
 from .devices import FunctionID, ErrorCode
 
@@ -39,15 +40,20 @@ class PID_Controller(object):
         the IP Connection *ipcon*.
         """
         self.__ipcon = ipcon
+        self.__logger = logging.getLogger(__name__)
 
     async def __send_single_request(self, key, value=None):
       result = await self.__ipcon.send_request(
-            data={
-              key: value,
-            },
-            response_expected=True
-        )
-      return result[key]
+              data={
+                  key: value,
+              },
+              response_expected=True
+          )
+      try:
+          return result[key]
+      except KeyError:
+          # This can happen, if another process is using the same sequence_number
+          self.__logger.error("Invalid reply received. Wrong reply for request id %(request_id)s. Is someone using the same id? data: %(data)s", {'request_id': key, 'data': result})
 
     async def __send_multi_request(self, data):
       return await self.__ipcon.send_request(
