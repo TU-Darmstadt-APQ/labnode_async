@@ -22,14 +22,14 @@ from enum import Enum, unique
 import logging
 
 from .devices import FunctionID, ErrorCode
+from .errors import NotInitializedError
 
-class NotInitializedError(Exception):
-    pass
 
 @unique
 class FeedbackDirection(Enum):
     NEGATIVE = 0
     POSITIVE = 1
+
 
 class PidController:  # pylint: disable=too-many-public-methods
     """

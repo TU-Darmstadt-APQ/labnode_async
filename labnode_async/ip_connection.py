@@ -18,7 +18,6 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 import asyncio
-from enum import Enum, unique
 import errno
 import logging
 
@@ -27,30 +26,9 @@ from cobs import cobs
 import cbor2 as cbor
 
 from .devices import FunctionID, DeviceIdentifier
-
-class UnknownFunctionError(Exception):
-    pass
-
-@unique
-class EnumerationType(Enum):
-    AVAILABLE = 0
-    CONNECTED = 1
-    DISCONNECTED = 2
-
-@unique
-class MessageType(Enum):
-    DEVICE_CONNECTED = 0
-    DEVICE_DISCONNECTED = 1
-
-@unique
-class Flags(Enum):
-    OK = 0
-    INVALID_PARAMETER = 1
-    FUNCTION_NOT_SUPPORTED = 2
-
 DEFAULT_WAIT_TIMEOUT = 2.5 # in seconds
 
-class IPConnectionAsync:
+class IPConnection:
     SEPARATOR = b'\x00'
 
     @property
@@ -146,7 +124,6 @@ class IPConnectionAsync:
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
                 self.logger.exception('Error while reading packet.')
-                pass
 
     async def __process_packet(self, data):
         try:

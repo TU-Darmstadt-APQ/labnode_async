@@ -24,13 +24,12 @@ import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 import warnings
 
-from source.ip_connection import IPConnectionAsync
-from source.devices import DeviceIdentifier
-from source.pid_controller import PID_Controller, FeedbackDirection
+from labnode_async import IPConnection, PidController, FeedbackDirection
+from labnode_async.devices import DeviceIdentifier
 
 from binascii import hexlify  # To print the MAC address
 
-ipcon = IPConnectionAsync()
+ipcon = IPConnection()
 running_tasks = []
 
 async def process_callbacks(callback_queue):
@@ -68,7 +67,7 @@ async def main():
         running_tasks.append(asyncio.ensure_future(process_callbacks(callback_queue)))
         running_tasks[-1].add_done_callback(error_handler)  # Add error handler to catch exceptions
         if (await ipcon.get_device_id() == DeviceIdentifier.PID):
-            pid_controller = PID_Controller(ipcon)
+            pid_controller = PidController(ipcon)
             # Test setters
             #await pid_controller.set_serial(1)
             # In this example our input temperature range of the sensor is:
