@@ -18,7 +18,6 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 import asyncio
-import async_timeout
 from enum import IntEnum, unique
 import logging
 
@@ -79,6 +78,13 @@ class IPConnectionAsync(object):
 
         self.__logger = logging.getLogger(__name__)
 
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.disconnect()
+
     def __encode_data(self, data):
       return bytearray(cobs.encode(data) + self.SEPARATOR)
 
@@ -119,31 +125,24 @@ class IPConnectionAsync(object):
 
     async def __read_packet(self):
         try:
-            with async_timeout.timeout(self.__timeout) as cm:
-                try:
-                    data = await self.__reader.readuntil(self.SEPARATOR)
-                    self.logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
-                    data = self.__decode_data(data)
-                    self.logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
-                    data = cbor.loads(data)
-                    data = {FunctionID(key) : value for key, value in data.items()}
-                    self.logger.debug('Decoded received data: %(data)s', {'data': data})
+            data = await asyncio.wait_for(self.__reader.readuntil(self.SEPARATOR), self.__timeout)
+            self.logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
+            data = self.__decode_data(data)
+            self.logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
+            data = cbor.loads(data)
+            data = {FunctionID(key) : value for key, value in data.items()}
+            self.logger.debug('Decoded received data: %(data)s', {'data': data})
 
-                    return data
-                except ValueError:
-                  # Raised by FunctionID(key)
-                  self.logger.error('Received invalid function id in data: %(data)s', {'data': data})
-                  return data
-                except asyncio.CancelledError:
-                    if cm.expired:
-                        raise asyncio.TimeoutError() from None
-                    else:
-                        raise
-                except:
-                  # TODO: Add explicit error handling for CBOR
-                  self.logger.exception('Error while reading packet.')
-                  return None
+            return data
+        except ValueError:
+            # Raised by FunctionID(key)
+            self.logger.error('Received invalid function id in data: %(data)s', {'data': data})
+            return data
         except asyncio.TimeoutError:
+            return None
+        except:
+            # TODO: Add explicit error handling for CBOR
+            self.logger.exception('Error while reading packet.')
             return None
 
     async def __process_packet(self, data):
@@ -168,10 +167,11 @@ class IPConnectionAsync(object):
                 payload = await self.__read_packet()
                 if payload is not None:
                     await self.__process_packet(payload)
-        except Exception as e:
-            self.logger.exception("Error while running main_loop: %s", e)
+        except Exception:
+            self.logger.exception('Error while running main_loop.')
         finally:
             await self.__close_transport()
+
     async def connect(self, host=None, port=None):
         if host is not None:
             self.__host = host
@@ -216,4 +216,3 @@ class IPConnectionAsync(object):
                 if not future.done():
                     future.set_exception(NotConnectedError('Sensornode IP connection closed.'))
             self.__pending_requests = {}
-            self.__logger.info('Sensornode IP connection closed.')
