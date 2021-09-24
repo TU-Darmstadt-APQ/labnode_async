@@ -123,27 +123,28 @@ class IPConnectionAsync(object):
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
 
-    async def __read_packet(self):
-        try:
-            data = await asyncio.wait_for(self.__reader.readuntil(self.SEPARATOR), self.__timeout)
-            self.logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
-            data = self.__decode_data(data)
-            self.logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
-            data = cbor.loads(data)
-            data = {FunctionID(key) : value for key, value in data.items()}
-            self.logger.debug('Decoded received data: %(data)s', {'data': data})
+    async def __read_packets(self):
+        while 'loop not cancelled':
+            try:
+                data = await asyncio.wait_for(self.__reader.readuntil(self.SEPARATOR), self.__timeout)
+                self.logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
+                data = self.__decode_data(data)
+                self.logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
+                data = cbor.loads(data)
+                data = {FunctionID(key) : value for key, value in data.items()}
+                self.logger.debug('Decoded received data: %(data)s', {'data': data})
 
-            return data
-        except ValueError:
-            # Raised by FunctionID(key)
-            self.logger.error('Received invalid function id in data: %(data)s', {'data': data})
-            return data
-        except asyncio.TimeoutError:
-            return None
-        except:
-            # TODO: Add explicit error handling for CBOR
-            self.logger.exception('Error while reading packet.')
-            return None
+                yield data
+            except ValueError:
+                # Raised by FunctionID(key)
+                self.logger.error('Received invalid function id in data: %(data)s', {'data': data})
+                yield data
+            except asyncio.TimeoutError:
+                pass
+            except:
+                # TODO: Add explicit error handling for CBOR
+                self.logger.exception('Error while reading packet.')
+                pass
 
     async def __process_packet(self, data):
         try:
@@ -162,11 +163,9 @@ class IPConnectionAsync(object):
     async def main_loop(self):
         try:
             self.logger.info('Sensornode IP connection established to host %(host)s', {'host': self.__host})
-            while 'loop not canceled':
+            async for packet in self.__read_packets():
                 # Read packets from the socket and process them.
-                payload = await self.__read_packet()
-                if payload is not None:
-                    await self.__process_packet(payload)
+                await self.__process_packet(packet)
         except Exception:
             self.logger.exception('Error while running main_loop.')
         finally:

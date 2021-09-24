@@ -46,11 +46,8 @@ class PID_Controller(object):
         self.__logger = logging.getLogger(__name__)
 
     async def __send_single_request(self, key, value=None):
-      result = await self.__ipcon.send_request(
-              data={
-                  key: value,
-              },
-              response_expected=True
+      result = await self.__send_multi_request(
+              data={key: value,}
           )
       try:
           return result[key]
@@ -245,7 +242,7 @@ class PID_Controller(object):
         Set the input, which is fed to the PID controller. The value is in Q16.16 format
         Returns The new outpout
         """
-        # We need to send a multi_request, because set input will return an ACK and a return value
+        # We need to send a multi_request, because set_input will return an ACK and a return value
         result = await __send_multi_request({FunctionID.set_input: int(value)})
         error_code = ErrorCode(result[FunctionID.set_input])
         if error_code == ErrorCode.valueError:
