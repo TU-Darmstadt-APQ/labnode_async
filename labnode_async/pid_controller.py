@@ -20,7 +20,7 @@
 from enum import IntEnum, unique
 import logging
 
-from .devices import FunctionID, ErrorCode
+from .devices import DeviceIdentifier, ErrorCode, FunctionID
 from .errors import NotInitializedError
 
 
@@ -34,6 +34,7 @@ class PidController:  # pylint: disable=too-many-public-methods
     """
     A simple remote PID controller
     """
+    DEVICE_IDENTIFIER = DeviceIdentifier.PID
 
     def __init__(self, ipcon):
         self.__ipcon = ipcon

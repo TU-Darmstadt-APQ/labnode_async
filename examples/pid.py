@@ -26,46 +26,10 @@ import warnings
 from labnode_async import IPConnection, PidController, FeedbackDirection
 from labnode_async.devices import DeviceIdentifier
 
-
-ipcon = IPConnection()
-running_tasks = []
-
-async def process_callbacks(callback_queue):
-    """
-    This infinite loop will print all callbacks.
-    It waits for packets from the callback queue,
-    which the ip connection will push.
-    """
-    try:
-        while 'queue not canceled':
-            packet = await callback_queue.get()
-            print('Callback received', packet)
-    except asyncio.CancelledError:
-        logging.getLogger(__name__).debug('Callback queue canceled')
-
-async def shutdown():
-    # Clean up: Disconnect ip connection and stop the consumers
-    for task in running_tasks:
-        task.cancel()
-    await asyncio.gather(*running_tasks)
-    await ipcon.disconnect()    # Disconnect the ip connection last to allow cleanup
-
-def error_handler(task):
-    try:
-        task.result()
-    except Exception:
-        asyncio.ensure_future(shutdown())
-
 async def main():
     try:
-#        await ipcon.connect(host='127.0.0.1', port=4223)
-#        await ipcon.connect(host='10.0.0.131', port=4223)
-        await ipcon.connect(host='192.168.1.94', port=4223)
-        callback_queue = asyncio.Queue()
-        running_tasks.append(asyncio.ensure_future(process_callbacks(callback_queue)))
-        running_tasks[-1].add_done_callback(error_handler)  # Add error handler to catch exceptions
-        if await ipcon.get_device_id() is DeviceIdentifier.PID:
-            pid_controller = PidController(ipcon)
+        ipcon = IPConnection(host='127.0.0.1', port=4223)
+        async with ipcon as pid_controller:
             # Test setters
             #await pid_controller.set_serial(1)
             # In this example our input temperature range of the sensor is:
@@ -91,7 +55,7 @@ async def main():
             #await pid_controller.set_enabled(True)
 
             # Test getters
-            print(f"Device Type: {(await ipcon.get_device_id()).name}")
+            print(f"Device Type: {pid_controller.DEVICE_IDENTIFIER.name}")
             print(f"Controller API version: {'.'.join(map(str, await pid_controller.get_api_version()))}")
             print(f"Controller hardware version: {'.'.join(map(str, await pid_controller.get_hardware_version()))}")
             print(f"Controller software version: {'.'.join(map(str, await pid_controller.get_software_version()))}")
@@ -108,7 +72,6 @@ async def main():
         print('Stopped the main loop')
     finally:
         logging.getLogger(__name__).debug('Shutting down the main task')
-        asyncio.ensure_future(shutdown())
 
 # Report all mistakes managing asynchronous resources.
 warnings.simplefilter('always', ResourceWarning)

@@ -26,7 +26,9 @@ from cobs import cobs
 import cbor2 as cbor
 
 from .devices import FunctionID, DeviceIdentifier
+from .device_factory import device_factory
 DEFAULT_WAIT_TIMEOUT = 2.5 # in seconds
+
 
 class IPConnection:
     SEPARATOR = b'\x00'
@@ -43,8 +45,11 @@ class IPConnection:
         self.__timeout = abs(int(value))
 
     @property
-    def logger(self):
-        return self.__logger
+    def is_connected(self):
+        """
+        Returns *True* if, the connection is established.
+        """
+        return self.__writer is not None and not self.__writer.is_closing()
 
     def __init__(self, host=None, port=4223):
         self.__running_tasks = []
@@ -53,13 +58,15 @@ class IPConnection:
         self.__port = port
         self.__request_id_queue = None
         self.__timeout = DEFAULT_WAIT_TIMEOUT
+        self.__read_lock = None  # We need to lock the
         self.__pending_requests = {}
 
         self.__logger = logging.getLogger(__name__)
 
     async def __aenter__(self):
         await self.connect()
-        return self
+        device_id = await self.get_device_id()
+        return device_factory.get(device_id, self)
 
     async def __aexit__(self, exc_type, exc, traceback):
         await self.disconnect()
@@ -72,7 +79,7 @@ class IPConnection:
         return cobs.decode(data[:-1])  # Strip the separator
 
     async def get_device_id(self):
-        self.logger.debug('Getting device type')
+        self.__logger.debug('Getting device type')
         result = await self.send_request(
             data={
               FunctionID.GET_DEVICE_TYPE: None,
@@ -85,19 +92,19 @@ class IPConnection:
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id =  await self.__request_id_queue.get()
         data[FunctionID.REQUEST_ID] = request_id
-        self.logger.debug('Sending data: %(payload)s', {'payload': data})
+        self.__logger.debug('Sending data: %(payload)s', {'payload': data})
         request = self.__encode_data(
           cbor.dumps(data)
         )
-        self.logger.debug('Sending request: %(payload)s', {'payload': request})
+        self.__logger.debug('Sending request: %(payload)s', {'payload': request})
         try:
             self.__writer.write(request)
             if response_expected:
-                self.logger.debug('Waiting for reply for request number %(request_id)s.', {'request_id': request_id})
+                self.__logger.debug('Waiting for reply for request number %(request_id)s.', {'request_id': request_id})
                 # The future will be resolved by the main_loop() and __process_packet()
                 self.__pending_requests[request_id] = asyncio.Future()
                 response  = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
-                self.logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
+                self.__logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
                 return response
         finally:
             # Return the sequence number
@@ -106,30 +113,31 @@ class IPConnection:
     async def __read_packets(self):
         while 'loop not cancelled':
             try:
-                data = await asyncio.wait_for(self.__reader.readuntil(self.SEPARATOR), self.__timeout)
-                self.logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
+                async with self.__read_lock:
+                    data = await asyncio.wait_for(self.__reader.readuntil(self.SEPARATOR), self.__timeout)
+                self.__logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
                 data = self.__decode_data(data)
-                self.logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
+                self.__logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
                 data = cbor.loads(data)
                 data = {FunctionID(key) : value for key, value in data.items()}
-                self.logger.debug('Decoded received data: %(data)s', {'data': data})
+                self.__logger.debug('Decoded received data: %(data)s', {'data': data})
 
                 yield data
             except ValueError:
                 # Raised by FunctionID(key)
-                self.logger.error('Received invalid function id in data: %(data)s', {'data': data})
+                self.__logger.error('Received invalid function id in data: %(data)s', {'data': data})
                 yield data
             except asyncio.TimeoutError:
                 pass
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
-                self.logger.exception('Error while reading packet.')
+                self.__logger.exception('Error while reading packet.')
 
     async def __process_packet(self, data):
         try:
             request_id = data.get(FunctionID.REQUEST_ID)
         except AttributeError:
-            self.logger.error('Received invalid data: %(data)s', {'data': data})
+            self.__logger.error('Received invalid data: %(data)s', {'data': data})
         else:
             try:
                 # Get the future and mark it as done
@@ -140,7 +148,7 @@ class IPConnection:
                 pass
 
     async def main_loop(self):
-        self.logger.info('Sensornode IP connection established to host %(host)s', {'host': self.__host})
+        self.__logger.info('Sensornode IP connection established to host %(host)s', {'host': self.__host})
         try:
             async for packet in self.__read_packets():
                 # Read packets from the socket and process them.
@@ -149,6 +157,9 @@ class IPConnection:
             await self.__close_transport()
 
     async def connect(self, host=None, port=None):
+        if self.is_connected:
+            return
+
         if host is not None:
             self.__host = host
         if port is not None:
@@ -161,10 +172,13 @@ class IPConnection:
         for i in range(24):
             self.__request_id_queue.put_nowait(i)
 
+        self.__read_lock = asyncio.Lock()
         self.__reader, self.__writer = await asyncio.open_connection(self.__host, self.__port)
         self.__running_tasks.append(asyncio.create_task(self.main_loop()))
 
     async def disconnect(self):
+        if not self.is_connected:
+            return
         for task in self.__running_tasks:
             task.cancel()
         try:
