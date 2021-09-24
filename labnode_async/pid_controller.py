@@ -17,8 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-from decimal import Decimal
-from enum import Enum, unique
+from enum import IntEnum, unique
 import logging
 
 from .devices import FunctionID, ErrorCode
@@ -26,7 +25,7 @@ from .errors import NotInitializedError
 
 
 @unique
-class FeedbackDirection(Enum):
+class FeedbackDirection(IntEnum):  # We use IntEnum, because those can be easily serialized using the standard CBOR converter
     NEGATIVE = 0
     POSITIVE = 1
 
@@ -88,8 +87,8 @@ class PidController:  # pylint: disable=too-many-public-methods
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        result = Decimal(await self.__send_single_request(FunctionID.GET_BOARD_TEMPERATURE))
-        return 175.72 * result / (2**16 - 1) - 46.85
+        result = await self.__send_single_request(FunctionID.GET_BOARD_TEMPERATURE)
+        return 175.72 * result / 2**16 - 1 - 46.85
 
     async def get_humidity(self):
         """

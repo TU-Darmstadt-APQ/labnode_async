@@ -17,11 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-from enum import Enum, unique
+from enum import IntEnum, unique  # We use IntEnum, because those can be easily serialized using the standard CBOR converter
 
 
 @unique
-class FunctionID(Enum):
+class FunctionID(IntEnum):
     SET_INPUT = 0
     SET_KP = 1
     SET_KI = 2
@@ -59,7 +59,7 @@ class FunctionID(Enum):
 
 
 @unique
-class ErrorCode(Enum):
+class ErrorCode(IntEnum):
     ACK = 249
     VALUE_ERROR = 250
     INVALID_FORMAT = 251
@@ -70,5 +70,5 @@ class ErrorCode(Enum):
 
 
 @unique
-class DeviceIdentifier(Enum):
+class DeviceIdentifier(IntEnum):
     PID = 0

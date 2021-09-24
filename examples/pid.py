@@ -19,15 +19,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 import asyncio
+from binascii import hexlify  # To print the MAC address
 import logging
-import sys
-sys.path.append("..") # Adds higher directory to python modules path.
 import warnings
 
 from labnode_async import IPConnection, PidController, FeedbackDirection
 from labnode_async.devices import DeviceIdentifier
 
-from binascii import hexlify  # To print the MAC address
 
 ipcon = IPConnection()
 running_tasks = []
@@ -54,19 +52,19 @@ async def shutdown():
 
 def error_handler(task):
     try:
-      task.result()
+        task.result()
     except Exception:
-      asyncio.ensure_future(shutdown())
+        asyncio.ensure_future(shutdown())
 
 async def main():
-    try: 
+    try:
 #        await ipcon.connect(host='127.0.0.1', port=4223)
 #        await ipcon.connect(host='10.0.0.131', port=4223)
         await ipcon.connect(host='192.168.1.94', port=4223)
         callback_queue = asyncio.Queue()
         running_tasks.append(asyncio.ensure_future(process_callbacks(callback_queue)))
         running_tasks[-1].add_done_callback(error_handler)  # Add error handler to catch exceptions
-        if (await ipcon.get_device_id() == DeviceIdentifier.PID):
+        if await ipcon.get_device_id() is DeviceIdentifier.PID:
             pid_controller = PidController(ipcon)
             # Test setters
             #await pid_controller.set_serial(1)
@@ -93,16 +91,16 @@ async def main():
             #await pid_controller.set_enabled(True)
 
             # Test getters
-            print("Device Type: {}".format((await ipcon.get_device_id()).name))
-            print("Controller API version: {}.{}.{}".format(*await pid_controller.get_api_version()))
-            print("Controller hardware version: {}.{}.{}".format(*await pid_controller.get_hardware_version()))
-            print("Controller software version: {}.{}.{}".format(*await pid_controller.get_software_version()))
-            print("Controller serial number: {}".format(await pid_controller.get_serial()))
-            print("Device temperature: {:.2f} °C".format(await pid_controller.get_device_temperature()))
-            print("Humidity: {:.2f} %rH".format(await pid_controller.get_humidity()))
-            print("MAC Address: {}".format(hexlify(await pid_controller.get_mac_address(),":").decode("utf-8")))
-            print("Controller resumes automatically: {}".format(await pid_controller.get_auto_resume()))
-            print("Calibration offset: {} K".format(await pid_controller.get_calibration_offset()))
+            print(f"Device Type: {(await ipcon.get_device_id()).name}")
+            print(f"Controller API version: {'.'.join(map(str, await pid_controller.get_api_version()))}")
+            print(f"Controller hardware version: {'.'.join(map(str, await pid_controller.get_hardware_version()))}")
+            print(f"Controller software version: {'.'.join(map(str, await pid_controller.get_software_version()))}")
+            print(f"Controller serial number: {await pid_controller.get_serial()}")
+            print(f"Device temperature: {await pid_controller.get_device_temperature():.2f} °C")
+            print(f"Humidity: {await pid_controller.get_humidity():.2f} %rH")
+            print(f"MAC Address: {hexlify(await pid_controller.get_mac_address(),':').decode('utf-8')}")
+            print(f"Controller resumes automatically: {await pid_controller.get_auto_resume()}")
+            print(f"Calibration offset: {await pid_controller.get_calibration_offset()} K")
             #await pid_controller.reset()
     except ConnectionRefusedError:
         logging.getLogger(__name__).error('Could not connect to remote target. Connection refused. Is the device up?')
