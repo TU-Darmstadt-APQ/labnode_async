@@ -18,9 +18,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 import asyncio
-from collections import namedtuple
 from enum import Enum, IntEnum, unique
-import time
 
 
 @unique
