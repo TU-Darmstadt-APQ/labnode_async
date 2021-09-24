@@ -24,6 +24,9 @@ import logging
 
 from .devices import FunctionID, ErrorCode
 
+class NotInitializedError(Exception):
+    pass
+
 @unique
 class FeedbackDirection(IntEnum):
     negative = 0,
@@ -196,6 +199,8 @@ class PID_Controller(object):
         In short: If set to FeedbackDirection.negative, a positive error will result in a negative plant response.
         """
         result = ErrorCode(await self.__send_single_request(FunctionID.set_output, int(value)))
+        if result == ErrorCode.notInitialized:
+            raise NotInitializedError()
         if result == ErrorCode.valueError:
             raise ValueError()    # TODO: There is no error yet
 
