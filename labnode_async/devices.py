@@ -17,60 +17,58 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-import asyncio
-from enum import Enum, IntEnum, unique
+from enum import Enum, unique
 
 
 @unique
-class FunctionID(IntEnum):
-    set_input = 0,
-    set_kp = 1,
-    set_ki = 2,
-    set_kd = 3,
-    set_lower_output_limit = 4,
-    set_upper_output_limit = 5,
-    set_enabled = 6,
-    set_timeout = 7,
-    set_direction = 8,
-    set_setpoint = 9,
-    set_output = 10,
-    get_software_version = 11,
-    get_serial_number = 12,
-    set_serial_number = 16,
-    get_device_type = 13,
-    set_gain = 14,
-    get_board_temperature = 15,
-    get_hardware_version = 17,
-    get_humidity = 18,
-    get_calibration_offset = 19,
-    set_calibration_offset = 20,
-    reset_settings = 21,
+class FunctionID(Enum):
+    SET_INPUT = 0
+    SET_KP = 1
+    SET_KI = 2
+    SET_KD = 3
+    SET_LOWER_OUTPUT_LIMIT = 4
+    SET_UPPER_OUTPUT_LIMIT = 5
+    SET_ENABLED = 6
+    SET_TIMEOUT = 7
+    SET_DIRECTION = 8
+    SET_SETPOINT = 9
+    SET_OUTPUT = 10
+    GET_SOFTWARE_VERSION = 11
+    GET_SERIAL_NUMBER = 12
+    SET_SERIAL_NUMBER = 16
+    GET_DEVICE_TYPE = 13
+    SET_GAIN = 14
+    GET_BOARD_TEMPERATURE = 15
+    GET_HARDWARE_VERSION = 17
+    GET_HUMIDITY = 18
+    GET_CALIBRATION_OFFSET = 19
+    SET_CALIBRATION_OFFSET = 20
+    RESET_SETTINGS = 21
 
-    callback_update_value = 22,
+    CALLBACK_UPDATE_VALUE = 22
 
-    request_id = 23,
-    get_mac_address = 24,
-    set_mac_address = 25,
-    get_auto_resume = 26,
-    set_auto_resume = 27,
+    REQUEST_ID = 23
+    GET_MAC_ADDRESS = 24
+    SET_MAC_ADDRESS = 25
+    GET_AUTO_RESUME = 26
+    SET_AUTO_RESUME = 27
 
-    reset           = 30,
-    get_api_version = 31,
-    is_partial_message = 32,
-
-
-@unique
-class ErrorCode(IntEnum):
-    ack = 249,
-    valueError = 250,
-    invalidFormat = 251,
-    invalidCommand = 252,
-    notInitialized = 253,
-    notImplemented = 254,
-    deprecated = 255,
+    RESET           = 30
+    GET_API_VERSION = 31
+    IS_PARTIAL_MESSAGE = 32
 
 
 @unique
-class DeviceIdentifier(IntEnum):
+class ErrorCode(Enum):
+    ACK = 249
+    VALUE_ERROR = 250
+    INVALID_FORMAT = 251
+    INVALID_COMMAND = 252
+    NOT_INITIALIZED = 253
+    NOT_IMPLEMENTED = 254
+    DEPRECATED = 255
+
+
+@unique
+class DeviceIdentifier(Enum):
     PID = 0
-

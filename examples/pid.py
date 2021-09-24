@@ -87,7 +87,7 @@ async def main():
             #await pid_controller.set_upper_output_limit(4095)
             #await pid_controller.set_timeout(1000)
             #await pid_controller.set_dac_gain(False)
-            #await pid_controller.set_pid_feedback_direction(FeedbackDirection.negative)
+            #await pid_controller.set_pid_feedback_direction(FeedbackDirection.NEGATIVE)
             #await pid_controller.set_auto_resume(True)
             #await pid_controller.set_enabled(False)
             #await pid_controller.set_output(1200)

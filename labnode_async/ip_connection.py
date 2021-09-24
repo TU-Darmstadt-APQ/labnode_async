@@ -18,7 +18,8 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 import asyncio
-from enum import IntEnum, unique
+from enum import Enum, unique
+import errno
 import logging
 
 # All messages are COBS encoded, while the data is serialized using the CBOR protocol
@@ -31,25 +32,25 @@ class UnknownFunctionError(Exception):
     pass
 
 @unique
-class EnumerationType(IntEnum):
-    available = 0
-    connected = 1
-    disconnected = 2
+class EnumerationType(Enum):
+    AVAILABLE = 0
+    CONNECTED = 1
+    DISCONNECTED = 2
 
 @unique
-class MessageType(IntEnum):
-    device_connected = 0
-    device_disconnected = 1
+class MessageType(Enum):
+    DEVICE_CONNECTED = 0
+    DEVICE_DISCONNECTED = 1
 
 @unique
-class Flags(IntEnum):
-    ok = 0
-    invalid_parameter = 1
-    function_not_supported = 2
+class Flags(Enum):
+    OK = 0
+    INVALID_PARAMETER = 1
+    FUNCTION_NOT_SUPPORTED = 2
 
 DEFAULT_WAIT_TIMEOUT = 2.5 # in seconds
 
-class IPConnectionAsync(object):
+class IPConnectionAsync:
     SEPARATOR = b'\x00'
 
     @property
@@ -82,29 +83,30 @@ class IPConnectionAsync(object):
         await self.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(self, exc_type, exc, traceback):
         await self.disconnect()
 
     def __encode_data(self, data):
-      return bytearray(cobs.encode(data) + self.SEPARATOR)
+        return bytearray(cobs.encode(data) + self.SEPARATOR)
 
-    def __decode_data(self, data):
-      return cobs.decode(data[:-1]) # Strip the separator
+    @staticmethod
+    def __decode_data(data):
+        return cobs.decode(data[:-1])  # Strip the separator
 
     async def get_device_id(self):
         self.logger.debug('Getting device type')
         result = await self.send_request(
             data={
-              FunctionID.get_device_type: None,
+              FunctionID.GET_DEVICE_TYPE: None,
             },
             response_expected=True
         )
-        return DeviceIdentifier(result[FunctionID.get_device_type])
+        return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE])
 
     async def send_request(self, data, response_expected=False):
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id =  await self.__request_id_queue.get()
-        data[FunctionID.request_id] = request_id
+        data[FunctionID.REQUEST_ID] = request_id
         self.logger.debug('Sending data: %(payload)s', {'payload': data})
         request = self.__encode_data(
           cbor.dumps(data)
@@ -141,14 +143,14 @@ class IPConnectionAsync(object):
                 yield data
             except asyncio.TimeoutError:
                 pass
-            except:
+            except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
                 self.logger.exception('Error while reading packet.')
                 pass
 
     async def __process_packet(self, data):
         try:
-            request_id = data.get(FunctionID.request_id)
+            request_id = data.get(FunctionID.REQUEST_ID)
         except AttributeError:
             self.logger.error('Received invalid data: %(data)s', {'data': data})
         else:
@@ -161,13 +163,11 @@ class IPConnectionAsync(object):
                 pass
 
     async def main_loop(self):
+        self.logger.info('Sensornode IP connection established to host %(host)s', {'host': self.__host})
         try:
-            self.logger.info('Sensornode IP connection established to host %(host)s', {'host': self.__host})
             async for packet in self.__read_packets():
                 # Read packets from the socket and process them.
                 await self.__process_packet(packet)
-        except Exception:
-            self.logger.exception('Error while running main_loop.')
         finally:
             await self.__close_transport()
 
@@ -211,7 +211,7 @@ class IPConnectionAsync(object):
         finally:
             self.__writer, self.__reader = None, None
             # Cancel all pending requests, that have not been resolved
-            for request_id, future in self.__pending_requests.items():
+            for _, future in self.__pending_requests.items():
                 if not future.done():
-                    future.set_exception(NotConnectedError('Sensornode IP connection closed.'))
+                    future.set_exception(ConnectionError('Sensornode IP connection closed.'))
             self.__pending_requests = {}
