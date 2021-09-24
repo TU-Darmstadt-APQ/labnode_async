@@ -38,10 +38,6 @@ class PID_Controller(object):
     """
 
     def __init__(self, ipcon):
-        """
-        Creates an object with the unique device ID *uid* and adds it to
-        the IP Connection *ipcon*.
-        """
         self.__ipcon = ipcon
         self.__logger = logging.getLogger(__name__)
 

@@ -22,6 +22,7 @@ from collections import namedtuple
 from enum import Enum, IntEnum, unique
 import time
 
+
 @unique
 class FunctionID(IntEnum):
     set_input = 0,
@@ -59,6 +60,7 @@ class FunctionID(IntEnum):
     get_api_version = 31,
     is_partial_message = 32,
 
+
 @unique
 class ErrorCode(IntEnum):
     ack = 249,
@@ -69,6 +71,8 @@ class ErrorCode(IntEnum):
     notImplemented = 254,
     deprecated = 255,
 
+
+@unique
 class DeviceIdentifier(IntEnum):
     PID = 0
 
