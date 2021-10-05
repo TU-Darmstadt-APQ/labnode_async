@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-from enum import IntEnum, unique
+from enum import Enum, unique
 import logging
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
@@ -25,9 +25,9 @@ from .errors import NotInitializedError
 
 
 @unique
-class FeedbackDirection(IntEnum):  # We use IntEnum, because those can be easily serialized using the standard CBOR converter
-    NEGATIVE = 0
-    POSITIVE = 1
+class FeedbackDirection(Enum):
+    NEGATIVE = False
+    POSITIVE = True
 
 
 class PidController:  # pylint: disable=too-many-public-methods
@@ -79,7 +79,6 @@ class PidController:  # pylint: disable=too-many-public-methods
         Returns The serial number of the device
         """
         return await self.__send_single_request(FunctionID.GET_SERIAL_NUMBER)
-
 
     async def get_device_temperature(self):
         """
@@ -146,6 +145,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError("Invalid limit")
 
+    async def get_lower_output_limit(self):
+        """
+        Get the minium allowed output of the DAC in bit values
+        """
+        return await self.__send_single_request(FunctionID.GET_LOWER_OUTPUT_LIMIT)
+
     async def set_upper_output_limit(self, limit):
         """
         Set the maximum allowed output of the DAC in bit values
@@ -153,6 +158,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         result = ErrorCode(await self.__send_single_request(FunctionID.SET_UPPER_OUTPUT_LIMIT, limit))
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError("Invalid limit")
+
+    async def get_upper_output_limit(self):
+        """
+        Get the minium allowed output of the DAC in bit values
+        """
+        return await self.__send_single_request(FunctionID.GET_UPPER_OUTPUT_LIMIT)
 
     async def set_timeout(self, timeout):
         """
@@ -162,6 +173,9 @@ class PidController:  # pylint: disable=too-many-public-methods
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()    # TODO: There is no error yet
 
+    async def get_timeout(self):
+        return await self.__send_single_request(FunctionID.GET_TIMEOUT)
+
     async def set_dac_gain(self, enable):
         """
         Set the gain of the DAC to x2. This will increase the output voltage range from 0..5V to 0..10V.
@@ -169,6 +183,9 @@ class PidController:  # pylint: disable=too-many-public-methods
         result = ErrorCode(await self.__send_single_request(FunctionID.SET_GAIN, bool(enable)))
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()    # TODO: There is no error yet
+
+    async def is_dac_gain_enabled(self):
+        return await self.__send_single_request(FunctionID.GET_GAIN)
 
     async def set_pid_feedback_direction(self, feedback):
         """
@@ -178,35 +195,30 @@ class PidController:  # pylint: disable=too-many-public-methods
         an increase in the feedback will increase the cooling action.
         In short: If set to FeedbackDirection.NEGATIVE, a positive error will result in a negative plant response.
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_DIRECTION, bool(feedback)))
+        result = ErrorCode(await self.__send_single_request(FunctionID.SET_DIRECTION, feedback.value))
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()    # TODO: There is no error yet
 
+    async def get_pid_feedback_direction(self):
+        return FeedbackDirection(await self.__send_single_request(FunctionID.GET_DIRECTION))
+
     async def set_output(self, value):
-        """
-        Set the sign of the pid output. This needs to be adjusted according to the actuator used to
-        control the plant. Typically it is assumed, that the feedback is negative. For example, when
-        dealing with e.g. tempeature control, this means, that, using negative feedback, if the temperature
-        is too high an increase in the feedback will increase the cooling action.
-        In short: If set to FeedbackDirection.NEGATIVE, a positive error will result in a negative plant response.
-        """
         result = ErrorCode(await self.__send_single_request(FunctionID.SET_OUTPUT, int(value)))
         if result is ErrorCode.NOT_INITIALIZED:
             raise NotInitializedError()
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()    # TODO: There is no error yet
 
+    async def get_output(self):
+        return await self.__send_single_request(FunctionID.GET_OUTPUT)
+
     async def set_enabled(self, enabled):
-        """
-        Set the sign of the pid output. This needs to be adjusted according to the actuator used to
-        control the plant. Typically it is assumed, that the feedback is negative. For example, when
-        dealing with e.g. tempeature control, this means, that, using negative feedback, if the temperature
-        is too high an increase in the feedback will increase the cooling action.
-        In short: If set to FeedbackDirection.NEGATIVE, a positive error will result in a negative plant response.
-        """
         result = ErrorCode(await self.__send_single_request(FunctionID.SET_ENABLED, bool(enabled)))
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()    # TODO: There is no error yet
+
+    async def is_enabled(self):
+        return await self.__send_single_request(FunctionID.GET_ENABLED)
 
     async def set_kp(self, kp):  # pylint: disable=invalid-name
         """
@@ -216,6 +228,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()
 
+    async def get_kp(self):
+        """
+        Get the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        return await self.__send_single_request(FunctionID.GET_KP)
+
     async def set_ki(self, ki):  # pylint: disable=invalid-name
         """
         Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
@@ -224,6 +242,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()
 
+    async def get_ki(self):
+        """
+        Get the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        return await self.__send_single_request(FunctionID.GET_KI)
+
     async def set_kd(self, kd):  # pylint: disable=invalid-name
         """
         Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
@@ -231,6 +255,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         result = ErrorCode(await self.__send_single_request(FunctionID.SET_KD, int(kd)))
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError()
+
+    async def get_kd(self):
+        """
+        Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        return await self.__send_single_request(FunctionID.GET_KD)
 
     async def set_input(self, value):
         """
@@ -252,6 +282,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         result = ErrorCode(await self.__send_single_request(FunctionID.SET_SETPOINT, int(value)))
         if result is ErrorCode.VALUE_ERROR:
             raise ValueError("Invalid setpoint")
+
+    async def get_setpoint(self):
+        """
+        Get the PID setpoint. The value is in Q16.16 format
+        """
+        return await self.__send_single_request(FunctionID.GET_SETPOINT)
 
     async def set_calibration_offset(self, value):
         """

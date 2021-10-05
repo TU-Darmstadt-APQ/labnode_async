@@ -86,7 +86,11 @@ class IPConnection:
             },
             response_expected=True
         )
-        return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE])
+        try:
+            return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE])
+        except KeyError:
+            self.__logger.error("Got invalid reply for device id request: %s", result)
+            raise
 
     async def send_request(self, data, response_expected=False):
         # If we are waiting for a response, send the request, then pass on the response as a future
@@ -106,6 +110,7 @@ class IPConnection:
                 response  = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
                 self.__logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
                 return response
+                # TODO: Raise invalid command errors (252)
         finally:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
