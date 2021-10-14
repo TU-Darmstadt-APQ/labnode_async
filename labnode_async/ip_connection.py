@@ -134,9 +134,14 @@ class IPConnection:
                 yield data
             except asyncio.TimeoutError:
                 pass
+            except asyncio.exceptions.IncompleteReadError:
+                # the remote endpoint closed the connection
+                self.__logger.error(f"Labnode IP Connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
+                break   # terminate the conenction
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
                 self.__logger.exception('Error while reading packet.')
+                await asyncio.sleep(0.1)
 
     async def __process_packet(self, data):
         try:
