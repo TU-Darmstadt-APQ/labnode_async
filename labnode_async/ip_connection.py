@@ -148,7 +148,7 @@ class IPConnection:
                 yield data
             except asyncio.TimeoutError:
                 pass
-            except asyncio.exceptions.IncompleteReadError:
+            except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection
                 self.__logger.error(f"Labnode IP connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
                 break   # terminate the conenction
