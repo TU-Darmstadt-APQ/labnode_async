@@ -58,15 +58,14 @@ class IPConnection:
         self.__port = port
         self.__request_id_queue = None
         self.__timeout = DEFAULT_WAIT_TIMEOUT
-        self.__read_lock = None  # We need to lock the
+        self.__read_lock = None  # We need to lock the asyncio stream reader
         self.__pending_requests = {}
 
         self.__logger = logging.getLogger(__name__)
 
     async def __aenter__(self):
         await self.connect()
-        device_id = await self.get_device_id()
-        return device_factory.get(device_id, self)
+        return await self._get_device()
 
     async def __aexit__(self, exc_type, exc, traceback):
         await self.disconnect()
@@ -111,6 +110,10 @@ class IPConnection:
                 self.__logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
                 return response
                 # TODO: Raise invalid command errors (252)
+        except asyncio.exceptions.TimeoutError:
+            # If a timeout happens, we are no longer interested in the result of the future, so we remove is from the list
+            self.__pending_requests.pop(request_id, None)
+            raise   # pass on the error
         finally:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
@@ -136,7 +139,7 @@ class IPConnection:
                 pass
             except asyncio.exceptions.IncompleteReadError:
                 # the remote endpoint closed the connection
-                self.__logger.error(f"Labnode IP Connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
+                self.__logger.error(f"Labnode IP connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
                 break   # terminate the conenction
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
@@ -158,7 +161,7 @@ class IPConnection:
                 pass
 
     async def main_loop(self):
-        self.__logger.info('Sensornode IP connection established to host %(host)s', {'host': self.__host})
+        self.__logger.info('Labnode IP connection established to host %(host)s', {'host': self.__host})
         try:
             async for packet in self.__read_packets():
                 # Read packets from the socket and process them.
@@ -214,5 +217,5 @@ class IPConnection:
             # Cancel all pending requests, that have not been resolved
             for _, future in self.__pending_requests.items():
                 if not future.done():
-                    future.set_exception(ConnectionError('Sensornode IP connection closed.'))
+                    future.set_exception(ConnectionError('Labnode IP connection closed.'))
             self.__pending_requests = {}
