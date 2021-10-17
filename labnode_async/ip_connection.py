@@ -64,7 +64,7 @@ class IPConnection:
         port: int
             port of the connection
         timeout: float
-            the timeout in seconds used when making queries
+            the timeout in seconds used when making queries or connection attempts
         """
         self.__running_tasks = []
         self.__reader, self.__writer = None, None
@@ -141,7 +141,7 @@ class IPConnection:
         while 'loop not cancelled':
             try:
                 async with self.__read_lock:
-                    data = await asyncio.wait_for(self.__reader.readuntil(self.SEPARATOR), self.__timeout)
+                    data = await self.__reader.readuntil(self.SEPARATOR)
                 self.__logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
                 data = self.__decode_data(data)
                 self.__logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
@@ -154,8 +154,6 @@ class IPConnection:
                 # Raised by FunctionID(key)
                 self.__logger.error('Received invalid function id in data: %(data)s', {'data': data})
                 yield data
-            except asyncio.TimeoutError:
-                pass
             except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection
                 self.__logger.error(f"Labnode IP connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
@@ -207,7 +205,10 @@ class IPConnection:
             self.__request_id_queue.put_nowait(i)
 
         self.__read_lock = asyncio.Lock()
-        self.__reader, self.__writer = await asyncio.open_connection(self.__host, self.__port)
+        self.__reader, self.__writer = await asyncio.wait_for(
+            asyncio.open_connection(self.__host, self.__port),
+            self.__timeout
+        )
         self.__running_tasks.append(asyncio.create_task(self.main_loop()))
 
     async def disconnect(self):
