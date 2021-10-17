@@ -27,7 +27,6 @@ import cbor2 as cbor
 
 from .devices import FunctionID, DeviceIdentifier
 from .device_factory import device_factory
-DEFAULT_WAIT_TIMEOUT = 2.5 # in seconds
 
 class NotConnectedError(ConnectionError):
     """
@@ -47,7 +46,7 @@ class IPConnection:
 
     @timeout.setter
     def timeout(self, value):
-        self.__timeout = abs(int(value))
+        self.__timeout = abs(float(value))
 
     @property
     def is_connected(self):
@@ -56,13 +55,23 @@ class IPConnection:
         """
         return self.__writer is not None and not self.__writer.is_closing()
 
-    def __init__(self, host=None, port=4223):
+    def __init__(self, host=None, port=4223, timeout=2.5):
+        """
+        Parameters
+        ----------
+        host: str
+            hostname of the connection
+        port: int
+            port of the connection
+        timeout: float
+            the timeout in seconds used when making queries
+        """
         self.__running_tasks = []
         self.__reader, self.__writer = None, None
         self.__host = host
         self.__port = port
         self.__request_id_queue = None
-        self.__timeout = DEFAULT_WAIT_TIMEOUT
+        self.__timeout = timeout
         self.__read_lock = None  # We need to lock the asyncio stream reader
         self.__pending_requests = {}
 
