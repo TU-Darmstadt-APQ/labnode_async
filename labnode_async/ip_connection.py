@@ -114,26 +114,25 @@ class IPConnection:
             raise NotConnectedError("Labnode IP connection not connected.")
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id =  await self.__request_id_queue.get()
-        data[FunctionID.REQUEST_ID] = request_id
-        self.__logger.debug('Sending data: %(payload)s', {'payload': data})
-        request = self.__encode_data(
-          cbor.dumps(data)
-        )
-        self.__logger.debug('Sending request: %(payload)s', {'payload': request})
         try:
+            data[FunctionID.REQUEST_ID] = request_id
+            self.__logger.debug('Sending data: %(payload)s', {'payload': data})
+            request = self.__encode_data(
+                cbor.dumps(data)
+            )
+            self.__logger.debug('Sending request: %(payload)s', {'payload': request})
             self.__writer.write(request)
             if response_expected:
                 self.__logger.debug('Waiting for reply for request number %(request_id)s.', {'request_id': request_id})
                 # The future will be resolved by the main_loop() and __process_packet()
                 self.__pending_requests[request_id] = asyncio.Future()
-                response  = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
+                try:
+                    response = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
+                finally:
+                    del self.__pending_requests[request_id]    # Cleanup
                 self.__logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
                 return response
                 # TODO: Raise invalid command errors (252)
-        except asyncio.exceptions.TimeoutError:
-            # If a timeout happens, we are no longer interested in the result of the future, so we remove is from the list
-            self.__pending_requests.pop(request_id, None)
-            raise   # pass on the error
         finally:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
@@ -174,8 +173,10 @@ class IPConnection:
         else:
             try:
                 # Get the future and mark it as done
-                future = self.__pending_requests.pop(request_id)
-                future.set_result(data)
+                future = self.__pending_requests[request_id]
+                if not future.cancelled():
+                    # TODO: Check for invalid commands and raise errors
+                    future.set_result(data)
             except KeyError:
                 # Drop the packet, because it is not our sequence number
                 pass
