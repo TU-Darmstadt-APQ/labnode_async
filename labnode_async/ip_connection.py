@@ -29,6 +29,11 @@ from .devices import FunctionID, DeviceIdentifier
 from .device_factory import device_factory
 DEFAULT_WAIT_TIMEOUT = 2.5 # in seconds
 
+class NotConnectedError(ConnectionError):
+    """
+    Raised if there is no connection
+    """
+
 
 class IPConnection:
     SEPARATOR = b'\x00'
@@ -91,7 +96,13 @@ class IPConnection:
             self.__logger.error("Got invalid reply for device id request: %s", result)
             raise
 
+    async def _get_device(self):
+        device_id = await self.get_device_id()
+        return device_factory.get(device_id, self)
+
     async def send_request(self, data, response_expected=False):
+        if not self.is_connected:
+            raise NotConnectedError("Labnode IP connection not connected.")
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id =  await self.__request_id_queue.get()
         data[FunctionID.REQUEST_ID] = request_id
