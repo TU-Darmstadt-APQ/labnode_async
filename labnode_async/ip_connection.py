@@ -46,7 +46,7 @@ class IPConnection:
 
     @timeout.setter
     def timeout(self, value):
-        self.__timeout = abs(float(value))
+        self.__timeout = None if value is None else abs(float(value))
 
     @property
     def is_connected(self):
@@ -71,7 +71,7 @@ class IPConnection:
         self.__host = host
         self.__port = port
         self.__request_id_queue = None
-        self.__timeout = timeout
+        self.timeout = timeout
         self.__read_lock = None  # We need to lock the asyncio stream reader
         self.__pending_requests = {}
 
