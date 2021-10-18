@@ -19,9 +19,10 @@
 # ##### END GPL LICENSE BLOCK #####
 from enum import Enum, unique
 import logging
+import warnings
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
-from .errors import NotInitializedError
+from .errors import NotInitializedError, InvalidReplyError, InvalidFormatError, InvalidModeError
 
 
 @unique
@@ -36,21 +37,60 @@ class PidController:  # pylint: disable=too-many-public-methods
     """
     DEVICE_IDENTIFIER = DeviceIdentifier.PID
 
+    RAW_TO_UNIT = {
+        # The datasheet is *wrong* about the conversion formula. Slightly wrong
+        # but wrong non the less. They are "off by 1" with the conversion of the
+        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
+        FunctionID.GET_BOARD_TEMPERATURE: lambda x: 175.72 * x / 2**16 - 1 - 46.85,
+        # We need to truncate to 100 %rH according to the datasheet
+        # The datasheet is *wrong* about the conversion formula. Slightly wrong
+        # but wrong non the less. They are "off by 1" with the conversion of the
+        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
+        FunctionID.GET_HUMIDITY: lambda x: 175.72 * x / 2**16 - 1 - 46.85
+    }
+
     def __init__(self, ipcon):
         self.__ipcon = ipcon
         self.__logger = logging.getLogger(__name__)
 
+    @staticmethod
+    def __test_for_errors(result, key):
+        if key > 0:
+            # We have a setter
+            status = ErrorCode(result[key])
+            if status is ErrorCode.INVALID_MODE:
+                raise InvalidModeError("The controller is set to the wrong mode. Disable it to set the outpout, enable it to set the input")
+            elif status is ErrorCode.INVALID_COMMAND:
+                raise InvalidCommandError(f"The command {key} is invalid")
+            elif status is ErrorCode.INVALID_PARAMETER_TYPE:
+                raise ValueError(f"Invalid value for request {key}")
+            elif status is ErrorCode.NOT_INITIALIZED:
+                raise NotInitializedError("PID controller not initialized, Make sure kp, ki, kd and the setpoint is set")
+            elif status is ErrorCode.NOT_IMPLEMENTED:
+                raise FunctionNotImplementedError(f"The function {key} is not implemented")
+            elif status is ErrorCode.DEPRECATED:
+                warnings.warn(f"The function {key} is deprecated", DeprecationWarning)
+
+        # If the controller cannot parse the packet, it will answer with an INVALID_FORMAT error
+        # and throw away the input, so we do not get a reply to our request.
+        if FunctionID.INVALID_FORMAT in result:
+            raise InvalidFormatError(f"Invalid data format. Check the datatype")
+        if key not in result:
+            # This can only happen, if another process is using the same sequence_number
+            raise InvalidReplyError(f"Invalid reply received. Wrong reply for request id {key}. Is someone using the same socket? Data: {result}")
+
     async def __send_single_request(self, key, value=None):
-        result = await self.__send_multi_request(
+        result = await self.send_multi_request(
             data={key: value,}
         )
-        try:
-            return result[key]
-        except KeyError:
-            # This can happen, if another process is using the same sequence_number
-            self.__logger.error("Invalid reply received. Wrong reply for request id %(request_id)s. Is someone using the same id? data: %(data)s", {'request_id': key, 'data': result})
+        self.__test_for_errors(result, key)
 
-    async def __send_multi_request(self, data):
+        if result[key] < 0:
+            return ErrorCode(result[key])
+        else:
+            return result[key]
+
+    async def send_multi_request(self, data):
         return await self.__ipcon.send_request(
             data=data,
             response_expected=True
@@ -84,22 +124,15 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Returns The temperature of the onboard sensor
         """
-        # The datasheet is *wrong* about the conversion formula. Slightly wrong
-        # but wrong non the less. They are "off by 1" with the conversion of the
-        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
         result = await self.__send_single_request(FunctionID.GET_BOARD_TEMPERATURE)
-        return 175.72 * result / 2**16 - 1 - 46.85
+        return PidController.RAW_TO_UNIT[FunctionID.GET_BOARD_TEMPERATURE](result)
 
     async def get_humidity(self):
         """
         Returns The humidity as read by the onboard sensor
         """
         result = await self.__send_single_request(FunctionID.GET_HUMIDITY)
-        # We need to truncate to 100 %rH according to the datasheet
-        # The datasheet is *wrong* about the conversion formula. Slightly wrong
-        # but wrong non the less. They are "off by 1" with the conversion of the
-        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        return min(125 * result / (2**16 - 1) - 6, 100)
+        return PidController.RAW_TO_UNIT[FunctionID.GET_HUMIDITY](result)
 
     async def get_mac_address(self):
         """
@@ -112,9 +145,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the MAC address used by the ethernet port
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_MAC_ADDRESS, mac))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError("Invalid MAC address")
+        await self.__send_single_request(FunctionID.SET_MAC_ADDRESS, mac)
 
     async def get_auto_resume(self):
         """
@@ -133,16 +164,15 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the controller to autmatically load the previous settings and resume its action
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_AUTO_RESUME, bool(value)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()
+        await self.__send_single_request(FunctionID.SET_AUTO_RESUME, bool(value))
 
     async def set_lower_output_limit(self, limit):
         """
         Set the minium allowed output of the DAC in bit values
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_LOWER_OUTPUT_LIMIT, limit))
-        if result is ErrorCode.VALUE_ERROR:
+        try:
+            await self.__send_single_request(FunctionID.SET_LOWER_OUTPUT_LIMIT, limit)
+        except InvalidFormatError:
             raise ValueError("Invalid limit")
 
     async def get_lower_output_limit(self):
@@ -155,8 +185,9 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the maximum allowed output of the DAC in bit values
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_UPPER_OUTPUT_LIMIT, limit))
-        if result is ErrorCode.VALUE_ERROR:
+        try:
+            await self.__send_single_request(FunctionID.SET_UPPER_OUTPUT_LIMIT, limit)
+        except InvalidFormatError:
             raise ValueError("Invalid limit")
 
     async def get_upper_output_limit(self):
@@ -169,9 +200,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the timeout, that defines when the controller switched to fallback mode. The time is in ms
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_TIMEOUT, int(timeout)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()    # TODO: There is no error yet
+        await self.__send_single_request(FunctionID.SET_TIMEOUT, int(timeout))
 
     async def get_timeout(self):
         return await self.__send_single_request(FunctionID.GET_TIMEOUT)
@@ -180,9 +209,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the gain of the DAC to x2. This will increase the output voltage range from 0..5V to 0..10V.
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_GAIN, bool(enable)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()    # TODO: There is no error yet
+        await self.__send_single_request(FunctionID.SET_GAIN, bool(enable))
 
     async def is_dac_gain_enabled(self):
         return await self.__send_single_request(FunctionID.GET_GAIN)
@@ -195,27 +222,20 @@ class PidController:  # pylint: disable=too-many-public-methods
         an increase in the feedback will increase the cooling action.
         In short: If set to FeedbackDirection.NEGATIVE, a positive error will result in a negative plant response.
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_DIRECTION, feedback.value))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()    # TODO: There is no error yet
+        feedback = FeedbackDirection(feedback)
+        await self.__send_single_request(FunctionID.SET_DIRECTION, feedback.value)
 
     async def get_pid_feedback_direction(self):
         return FeedbackDirection(await self.__send_single_request(FunctionID.GET_DIRECTION))
 
     async def set_output(self, value):
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_OUTPUT, int(value)))
-        if result is ErrorCode.NOT_INITIALIZED:
-            raise NotInitializedError()
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()    # TODO: There is no error yet
+        await self.__send_single_request(FunctionID.SET_OUTPUT, int(value))
 
     async def get_output(self):
         return await self.__send_single_request(FunctionID.GET_OUTPUT)
 
     async def set_enabled(self, enabled):
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_ENABLED, bool(enabled)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()    # TODO: There is no error yet
+        await self.__send_single_request(FunctionID.SET_ENABLED, bool(enabled))
 
     async def is_enabled(self):
         return await self.__send_single_request(FunctionID.GET_ENABLED)
@@ -224,9 +244,10 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_KP, int(kp)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()
+        try:
+            await self.__send_single_request(FunctionID.SET_KP, int(kp))
+        except InvalidFormatError:
+            raise ValueError("Invalid PID constant") from None
 
     async def get_kp(self):
         """
@@ -238,9 +259,10 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_KI, int(ki)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()
+        try:
+            await self.__send_single_request(FunctionID.SET_KI, int(ki))
+        except InvalidFormatError:
+            raise ValueError("Invalid PID constant") from None
 
     async def get_ki(self):
         """
@@ -252,9 +274,10 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_KD, int(kd)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError()
+        try:
+            result = ErrorCode(await self.__send_single_request(FunctionID.SET_KD, int(kd)))
+        except InvalidFormatError:
+            raise ValueError("Invalid PID constant") from None
 
     async def get_kd(self):
         """
@@ -262,26 +285,30 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         return await self.__send_single_request(FunctionID.GET_KD)
 
-    async def set_input(self, value):
+    async def set_input(self, value, return_output=False):
         """
         Set the input, which is fed to the PID controller. The value is in Q16.16 format
         Returns The new outpout
         """
-        # We need to send a multi_request, because set_input will return an ACK and a return value
-        result = await self.__send_multi_request({FunctionID.SET_INPUT: int(value)})
-        error_code = ErrorCode(result[FunctionID.SET_INPUT])
-        if error_code is ErrorCode.VALUE_ERROR:
-            raise ValueError()
+        # We need to send a multi_request, because if return_output is True, we want to get the
+        # output after the input has been set
+        request = {FunctionID.SET_INPUT: int(value)}
+        if return_output:
+            request[FunctionID.GET_OUTPUT] = None
+        result = await self.send_multi_request(request)
 
-        return result[FunctionID.CALLBACK_UPDATE_VALUE]
+        self.__test_for_errors(result, FunctionID.SET_INPUT)
+        if return_output:
+            return result[FunctionID.GET_OUTPUT]
 
     async def set_setpoint(self, value):
         """
         Set the PID setpoint. The value is in Q16.16 format
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_SETPOINT, int(value)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError("Invalid setpoint")
+        try:
+            await self.__send_single_request(FunctionID.SET_SETPOINT, int(value))
+        except InvalidFormatError:
+            raise ValueError("Invalid setpoint") from None
 
     async def get_setpoint(self):
         """
@@ -294,9 +321,10 @@ class PidController:  # pylint: disable=too-many-public-methods
         Set the offset subtracted from the internal temperature sensor, when running in fallback mode. The value is
         a floating point number in units of K
         """
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_CALIBRATION_OFFSET, float(value)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError("Invalid calibration offset")
+        try:
+            await self.__send_single_request(FunctionID.SET_CALIBRATION_OFFSET, float(value))
+        except InvalidFormatError:
+            raise ValueError("Invalid calibration offset") from None
 
     async def reset(self):
         """
@@ -311,6 +339,16 @@ class PidController:  # pylint: disable=too-many-public-methods
         await self.__send_single_request(FunctionID.RESET_SETTINGS)
 
     async def set_serial(self, serial):
-        result = ErrorCode(await self.__send_single_request(FunctionID.SET_SERIAL_NUMBER, int(serial)))
-        if result is ErrorCode.VALUE_ERROR:
-            raise ValueError("Invalid serial number")
+        try:
+            await self.__send_single_request(FunctionID.SET_SERIAL_NUMBER, int(serial))
+        except InvalidFormatError:
+            raise ValueError("Invalid serial number") from None
+
+    async def get_by_function_id(self, function_id):
+        function_id = FunctionID(function_id)
+        assert function_id.value < 0    # all getter have negative ids
+
+        result = await self.__send_single_request(function_id)
+        if function_id in PidController.RAW_TO_UNIT:
+            result = PidController.RAW_TO_UNIT[function_id](result)
+        return result

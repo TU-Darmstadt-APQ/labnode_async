@@ -19,3 +19,21 @@
 # ##### END GPL LICENSE BLOCK #####
 class NotInitializedError(Exception):
     pass
+
+
+class InvalidReplyError(Exception):
+    pass
+
+
+class InvalidModeError(Exception):
+    pass
+
+
+class FunctionNotImplementedError(Exception):
+    pass
+
+class InvalidCommandError(Exception):
+    pass
+
+class InvalidFormatError(Exception):
+    pass

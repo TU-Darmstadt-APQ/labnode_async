@@ -129,8 +129,12 @@ class IPConnection:
                 try:
                     response = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
                 finally:
-                    del self.__pending_requests[request_id]    # Cleanup
+                    # Cleanup. Note: The request_id, might not be in the dict anymore, because
+                    # if the remote endpoint shuts down the connection, __close_transport() is called,
+                    # which clears all pending requests.
+                    self.__pending_requests.pop(request_id, None)
                 self.__logger.debug('Got reply for request number %(request_id)s: %(response)s', {'request_id': request_id, 'response': response})
+                del response[FunctionID.REQUEST_ID]  # strip the request id, because we have added it above and it should be transparent
                 return response
                 # TODO: Raise invalid command errors (252)
         finally:

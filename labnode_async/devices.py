@@ -70,8 +70,9 @@ class FunctionID(IntEnum):
 
 @unique
 class ErrorCode(IntEnum):
+    INVALID_PARAMETER_TYPE = 248
     ACK = 249
-    VALUE_ERROR = 250
+    INVALID_MODE = 250
     INVALID_COMMAND = 252
     NOT_INITIALIZED = 253
     NOT_IMPLEMENTED = 254
