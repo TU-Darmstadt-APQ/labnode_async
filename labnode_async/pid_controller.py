@@ -41,12 +41,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        FunctionID.GET_BOARD_TEMPERATURE: lambda x: 175.72 * x / 2**16 - 1 - 46.85,
+        FunctionID.GET_BOARD_TEMPERATURE: lambda x: 175.72 * x / (2**16 - 1) - 46.85,
         # We need to truncate to 100 %rH according to the datasheet
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        FunctionID.GET_HUMIDITY: lambda x: 175.72 * x / 2**16 - 1 - 46.85
+        FunctionID.GET_HUMIDITY: lambda x: min(125 * x / (2**16 - 1) - 6, 100)
     }
 
     def __init__(self, ipcon):
@@ -85,7 +85,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         )
         self.__test_for_errors(result, key)
 
-        if result[key] < 0:
+        if key > 0:
             return ErrorCode(result[key])
         else:
             return result[key]
