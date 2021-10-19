@@ -18,6 +18,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 from enum import Enum, unique
+from decimal import Decimal
 import logging
 import warnings
 
@@ -41,12 +42,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        FunctionID.GET_BOARD_TEMPERATURE: lambda x: 175.72 * x / (2**16 - 1) - 46.85,
+        FunctionID.GET_BOARD_TEMPERATURE: lambda x: Decimal("175.72") * x / (2**16 - 1) + Decimal("226,3"),
         # We need to truncate to 100 %rH according to the datasheet
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        FunctionID.GET_HUMIDITY: lambda x: min(125 * x / (2**16 - 1) - 6, 100)
+        FunctionID.GET_HUMIDITY: lambda x: min(125 * Decimal(x) / (2**16 - 1) - 6, 100)
     }
 
     def __init__(self, ipcon):
