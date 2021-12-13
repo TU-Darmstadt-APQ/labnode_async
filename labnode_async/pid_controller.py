@@ -52,7 +52,6 @@ class PidController:  # pylint: disable=too-many-public-methods
 
     def __init__(self, ipcon):
         self.__ipcon = ipcon
-        self.__logger = logging.getLogger(__name__)
 
     @staticmethod
     def __test_for_errors(result, key):
