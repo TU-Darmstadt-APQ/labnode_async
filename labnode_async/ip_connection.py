@@ -76,6 +76,7 @@ class IPConnection:
         self.__pending_requests = {}
 
         self.__logger = logging.getLogger(__name__)
+        self.__logger.setLevel(logging.WARNING)     # Only log really important messages
 
     async def __aenter__(self):
         await self.connect()

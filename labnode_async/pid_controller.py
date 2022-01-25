@@ -42,12 +42,14 @@ class PidController:  # pylint: disable=too-many-public-methods
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
+        # Return Kelvin
         FunctionID.GET_BOARD_TEMPERATURE: lambda x: Decimal("175.72") * x / (2**16 - 1) + Decimal("226.3"),
         # We need to truncate to 100 %rH according to the datasheet
         # The datasheet is *wrong* about the conversion formula. Slightly wrong
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        FunctionID.GET_HUMIDITY: lambda x: min(125 * Decimal(x) / (2**16 - 1) - 6, 100)
+        # Return %rH (above liquid water water), rH values below 0°C need to be compensated.
+        FunctionID.GET_HUMIDITY: lambda x: max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)
     }
 
     def __init__(self, ipcon):
@@ -61,7 +63,7 @@ class PidController:  # pylint: disable=too-many-public-methods
             if status is ErrorCode.INVALID_MODE:
                 raise InvalidModeError("The controller is set to the wrong mode. Disable it to set the outpout, enable it to set the input")
             elif status is ErrorCode.INVALID_COMMAND:
-                raise InvalidCommandError(f"The command {key} is invalid")
+                raise TypeError(f"The command '{key}' is invalid")
             elif status is ErrorCode.INVALID_PARAMETER_TYPE:
                 raise ValueError(f"Invalid value for request {key}")
             elif status is ErrorCode.NOT_INITIALIZED:
@@ -152,13 +154,6 @@ class PidController:  # pylint: disable=too-many-public-methods
         Returns The MAC address used by the ethernet port
         """
         return await self.__send_single_request(FunctionID.GET_AUTO_RESUME)
-
-    async def get_calibration_offset(self):
-        """
-        Returns The offset, which is subtracted from the internal temperature sensor when running in fallback mode. The
-        return value is in units of K
-        """
-        return await self.__send_single_request(FunctionID.GET_CALIBRATION_OFFSET)
 
     async def set_auto_resume(self, value):
         """
@@ -318,13 +313,38 @@ class PidController:  # pylint: disable=too-many-public-methods
 
     async def set_calibration_offset(self, value):
         """
-        Set the offset subtracted from the internal temperature sensor, when running in fallback mode. The value is
+        Set the offset added to the internal temperature sensor, when running in fallback mode. The value is
         a floating point number in units of K
         """
         try:
             await self.__send_single_request(FunctionID.SET_CALIBRATION_OFFSET, float(value))
         except InvalidFormatError:
             raise ValueError("Invalid calibration offset") from None
+
+    async def get_calibration_offset(self):
+        """
+        Returns The offset, which is subtracted from the internal temperature sensor when running in fallback mode. The
+        return value is in units of K
+        """
+        return await self.__send_single_request(FunctionID.GET_CALIBRATION_OFFSET)
+
+    async def set_fallback_update_interval(self, value):
+        """
+        Set the update interval, when running in fallback mode. This value should be same as, when
+        not running in fallback mode, to keep the PID constants the same. The value is
+        an integer in ms
+        """
+        try:
+            await self.__send_single_request(FunctionID.SET_FALLBACK_UPDATE_INTERVAL, int(value))
+        except InvalidFormatError:
+            raise ValueError("Invalid calibration offset") from None
+
+    async def get_fallback_update_interval(self):
+        """
+        Returns The update interval, which is used when running in fallback mode. The
+        return value is in units of K
+        """
+        return await self.__send_single_request(FunctionID.GET_FALLBACK_UPDATE_INTERVAL)
 
     async def reset(self):
         """
