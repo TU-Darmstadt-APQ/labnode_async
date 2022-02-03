@@ -128,6 +128,7 @@ class IPConnection:
                 # The future will be resolved by the main_loop() and __process_packet()
                 self.__pending_requests[request_id] = asyncio.Future()
                 try:
+                    # wait_for() blocks until the request is done if timeout is None
                     response = await asyncio.wait_for(self.__pending_requests[request_id], self.__timeout)
                 finally:
                     # Cleanup. Note: The request_id, might not be in the dict anymore, because
@@ -165,6 +166,10 @@ class IPConnection:
                 break   # terminate the conenction
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
+                # kraken                                 |   File "/opt/venv/src/labnode-async/labnode_async/ip_connection.py", line 148, in __read_packets
+                # kraken                                 |     data = await self.__reader.readuntil(self.SEPARATOR)
+                # kraken                                 |   File "/usr/lib/python3.9/asyncio/streams.py", line 577, in readuntil
+                # kraken                                 |     raise self._exception
                 self.__logger.exception('Error while reading packet.')
                 await asyncio.sleep(0.1)
 
@@ -194,38 +199,43 @@ class IPConnection:
             await self.__close_transport()
 
     async def connect(self, host=None, port=None):
-        if self.is_connected:
-            return
+        # We need to lock the connect() call, because we
+        self.__read_lock = asyncio.Lock() if self.__read_lock is None else self.__read_lock
+        async with self.__read_lock:
+            if self.is_connected:
+                return
 
-        if host is not None:
-            self.__host = host
-        if port is not None:
-            self.__port = port
+            if host is not None:
+                self.__host = host
+            if port is not None:
+                self.__port = port
 
-        # The maximum sequency number is a uint8_t. That means 255.
-        # We only use the range of 0 to 23, because that requires only
-        # one byte when CBOR encoded
-        self.__request_id_queue = asyncio.Queue(maxsize=24)
-        for i in range(24):
-            self.__request_id_queue.put_nowait(i)
+            # The maximum sequence number is a uint8_t. That means 255.
+            # We only use the range of 0 to 23, because that requires only
+            # one byte when CBOR encoded
+            self.__request_id_queue = asyncio.Queue(maxsize=24)
+            for i in range(24):
+                self.__request_id_queue.put_nowait(i)
 
-        self.__read_lock = asyncio.Lock()
-        self.__reader, self.__writer = await asyncio.wait_for(
-            asyncio.open_connection(self.__host, self.__port),
-            self.__timeout
-        )
-        self.__running_tasks.append(asyncio.create_task(self.main_loop()))
+            # wait_for() blocks until the request is done if timeout is None
+            self.__reader, self.__writer = await asyncio.wait_for(
+                asyncio.open_connection(self.__host, self.__port),
+                self.__timeout
+            )
+            self.__running_tasks.append(asyncio.create_task(self.main_loop()))
 
     async def disconnect(self):
         if not self.is_connected:
             return
+        # This will cancel the main task, which will shut down the transport via __close_transport()
         for task in self.__running_tasks:
             task.cancel()
         try:
             await asyncio.gather(*self.__running_tasks)
         except asyncio.CancelledError:
             pass
-        self.__host = None
+        finally:
+            self.__read_lock = None
 
     async def __close_transport(self):
         # Flush data
