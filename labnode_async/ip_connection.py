@@ -146,6 +146,8 @@ class IPConnection:
     async def __read_packets(self):
         while 'loop not cancelled':
             try:
+                # We need to lock the stream reader, because only one coroutine is allowed to read
+                # data
                 async with self.__read_lock:
                     data = await self.__reader.readuntil(self.SEPARATOR)
                 self.__logger.debug('Received COBS encoded data: %(data)s', {'data': data.hex()})
