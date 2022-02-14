@@ -252,7 +252,7 @@ class IPConnection:
             else:
                 raise
         except ConnectionError:
-            # ignore connection related errors, because we are dropping the connection anyway
+            # Ignore connection related errors, because we are dropping the connection anyway
             pass
         finally:
             self.__writer, self.__reader = None, None
