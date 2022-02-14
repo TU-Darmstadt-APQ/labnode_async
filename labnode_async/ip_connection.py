@@ -251,6 +251,9 @@ class IPConnection:
                 pass # Socket is no longer connected, so we can't send the EOF.
             else:
                 raise
+        except ConnectionError:
+            # ignore connection related errors, because we are dropping the connection anyway
+            pass
         finally:
             self.__writer, self.__reader = None, None
             # Cancel all pending requests, that have not been resolved
