@@ -430,10 +430,16 @@ class PidController:  # pylint: disable=too-many-public-methods
         return await self.__send_single_request(FunctionID.GET_ACTIVE_CONNECTION_COUNT)
 
     async def get_by_function_id(self, function_id):
-        function_id = FunctionID(function_id)
-        assert function_id.value < 0    # all getter have negative ids
+        if self.__api_version >= (0, 11, 0):
+            function_id = FunctionID(function_id)
+            assert function_id.value < 0    # all getter have negative ids
 
         result = await self.__send_single_request(function_id)
-        if function_id in PidController.RAW_TO_UNIT:
-            result = PidController.RAW_TO_UNIT[function_id](result)
+        if self.__api_version < (0, 11, 0):
+            function_id = FunctionID.GET_BOARD_TEMPERATURE if function_id == -20 else function_id
+            function_id = FunctionID.GET_HUMIDITY if function_id == -21 else function_id
+
+            if function_id in PidController.RAW_TO_UNIT:
+                result = PidController.RAW_TO_UNIT[function_id](result)
+
         return result
