@@ -23,7 +23,7 @@ import logging
 import warnings
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
-from .errors import NotInitializedError, InvalidReplyError, InvalidFormatError, InvalidModeError
+from .errors import FunctionNotImplementedError, NotInitializedError, InvalidReplyError, InvalidFormatError, InvalidModeError
 
 
 @unique
@@ -52,7 +52,15 @@ class PidController:  # pylint: disable=too-many-public-methods
         FunctionID.GET_HUMIDITY: lambda x: max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)
     }
 
-    def __init__(self, ipcon):
+    @property
+    def api_version(self):
+        """
+        Returns The API version used by the device to communicate
+        """
+        return self.__api_version
+
+    def __init__(self, ipcon, api_version):
+        self.__api_version = api_version
         self.__ipcon = ipcon
 
     @staticmethod
@@ -110,12 +118,6 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         return await self.__send_single_request(FunctionID.GET_HARDWARE_VERSION)
 
-    async def get_api_version(self):
-        """
-        Returns The API version used by the device to communicate
-        """
-        return await self.__send_single_request(FunctionID.GET_API_VERSION)
-
     async def get_serial(self):
         """
         Returns The serial number of the device
@@ -126,14 +128,20 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Returns The temperature of the onboard sensor
         """
-        result = await self.__send_single_request(FunctionID.GET_BOARD_TEMPERATURE)
+        if self.__api_version >= (0, 11, 0):
+            result = await self.__send_single_request(FunctionID.GET_BOARD_TEMPERATURE)
+        else:
+            result = await self.__send_single_request(-20)
         return PidController.RAW_TO_UNIT[FunctionID.GET_BOARD_TEMPERATURE](result)
 
     async def get_humidity(self):
         """
         Returns The humidity as read by the onboard sensor
         """
-        result = await self.__send_single_request(FunctionID.GET_HUMIDITY)
+        if self.__api_version >= (0, 11, 0):
+            result = await self.__send_single_request(FunctionID.GET_HUMIDITY)
+        else:
+            result = await self.__send_single_request(-21)
         return PidController.RAW_TO_UNIT[FunctionID.GET_HUMIDITY](result)
 
     async def get_mac_address(self):
@@ -235,14 +243,20 @@ class PidController:  # pylint: disable=too-many-public-methods
     async def is_enabled(self):
         return await self.__send_single_request(FunctionID.GET_ENABLED)
 
+    async def __set_kx(self, function_id, kx):
+        """
+        Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        try:
+            await self.__send_single_request(function_id, int(kx))
+        except InvalidFormatError:
+            raise ValueError("Invalid PID constant") from None
+
     async def set_kp(self, kp):  # pylint: disable=invalid-name
         """
         Set the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        try:
-            await self.__send_single_request(FunctionID.SET_KP, int(kp))
-        except InvalidFormatError:
-            raise ValueError("Invalid PID constant") from None
+        await self.__set_kx(FunctionID.SET_KP, kp)
 
     async def get_kp(self):
         """
@@ -254,10 +268,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        try:
-            await self.__send_single_request(FunctionID.SET_KI, int(ki))
-        except InvalidFormatError:
-            raise ValueError("Invalid PID constant") from None
+        await self.__set_kx(FunctionID.SET_KI, ki)
 
     async def get_ki(self):
         """
@@ -269,16 +280,67 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        try:
-            result = ErrorCode(await self.__send_single_request(FunctionID.SET_KD, int(kd)))
-        except InvalidFormatError:
-            raise ValueError("Invalid PID constant") from None
+        await self.__set_kx(FunctionID.SET_KD, kd)
 
     async def get_kd(self):
         """
         Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
         return await self.__send_single_request(FunctionID.GET_KD)
+
+    async def set_secondary_kp(self, kp):  # pylint: disable=invalid-name
+        """
+        Set the PID Kp parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        if self.__api_version >= (0, 11, 0):
+            await self.__set_kx(FunctionID.SET_SECONDARY_KP, kp)
+        else:
+            raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
+
+    async def get_secondary_kp(self):
+        """
+        Get the PID Kp parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        if self.__api_version >= (0, 11, 0):
+            return await self.__send_single_request(FunctionID.GET_SECONDARY_KP)
+        else:
+            raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
+
+    async def set_secondary_ki(self, ki):  # pylint: disable=invalid-name
+        """
+        Set the PID Ki parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        if self.__api_version >= (0, 11, 0):
+            await self.__set_kx(FunctionID.SET_SECONDARY_KI, ki)
+        else:
+            raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
+
+    async def get_secondary_ki(self):
+        """
+        Get the PID Ki parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        if self.__api_version >= (0, 11, 0):
+            return await self.__send_single_request(FunctionID.GET_SECONDARY_KI)
+        else:
+            raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
+
+    async def set_secondary_kd(self, kd):  # pylint: disable=invalid-name
+        """
+        Set the PID Kd parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        if self.__api_version >= (0, 11, 0):
+            await self.__set_kx(FunctionID.SET_SECONDARY_KD, kd)
+        else:
+            raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
+
+    async def get_secondary_kd(self):
+        """
+        Get the PID Kd parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        """
+        if self.__api_version >= (0, 11, 0):
+            return await self.__send_single_request(FunctionID.GET_SECONDARY_KD)
+        else:
+            raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
 
     async def set_input(self, value, return_output=False):
         """
@@ -363,6 +425,9 @@ class PidController:  # pylint: disable=too-many-public-methods
             await self.__send_single_request(FunctionID.SET_SERIAL_NUMBER, int(serial))
         except InvalidFormatError:
             raise ValueError("Invalid serial number") from None
+
+    async def get_active_connection_count(self):
+        return await self.__send_single_request(FunctionID.GET_ACTIVE_CONNECTION_COUNT)
 
     async def get_by_function_id(self, function_id):
         function_id = FunctionID(function_id)

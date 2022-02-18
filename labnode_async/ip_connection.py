@@ -97,18 +97,19 @@ class IPConnection:
         result = await self.send_request(
             data={
               FunctionID.GET_DEVICE_TYPE: None,
+              FunctionID.GET_API_VERSION: None,
             },
             response_expected=True
         )
         try:
-            return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE])
+            return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE]), tuple(result[FunctionID.GET_API_VERSION])
         except KeyError:
             self.__logger.error("Got invalid reply for device id request: %s", result)
             raise
 
     async def _get_device(self):
-        device_id = await self.get_device_id()
-        return device_factory.get(device_id, self)
+        device_id, api_version = await self.get_device_id()
+        return device_factory.get(device_id, self, api_version=api_version)
 
     async def send_request(self, data, response_expected=False):
         if not self.is_connected:
