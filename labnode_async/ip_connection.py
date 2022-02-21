@@ -247,14 +247,14 @@ class IPConnection:
             await self.__writer.drain()
             self.__writer.close()
             await self.__writer.wait_closed()
+        except ConnectionError:
+            # Ignore connection related errors, because we are dropping the connection anyway
+            pass
         except OSError as exc:
             if exc.errno == errno.ENOTCONN:
                 pass # Socket is no longer connected, so we can't send the EOF.
             else:
                 raise
-        except ConnectionError:
-            # Ignore connection related errors, because we are dropping the connection anyway
-            pass
         finally:
             self.__writer, self.__reader = None, None
             # Cancel all pending requests, that have not been resolved
