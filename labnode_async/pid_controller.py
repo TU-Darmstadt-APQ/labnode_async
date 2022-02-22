@@ -431,7 +431,10 @@ class PidController:  # pylint: disable=too-many-public-methods
 
     async def get_by_function_id(self, function_id):
         if self.__api_version >= (0, 11, 0):
-            function_id = FunctionID(function_id)
+            try:
+                function_id = FunctionID(function_id)
+            except ValueError:
+                raise InvalidCommandError(f"{function_id} is invalid.") from None
             assert function_id.value < 0    # all getter have negative ids
 
         result = await self.__send_single_request(function_id)
