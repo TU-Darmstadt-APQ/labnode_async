@@ -155,13 +155,8 @@ class IPConnection:
                 data = self.__decode_data(data)
                 self.__logger.debug('Unpacked CBOR encoded data: %(data)s', {'data': data.hex()})
                 data = cbor.loads(data)
-                data = {FunctionID(key) : value for key, value in data.items()}
                 self.__logger.debug('Decoded received data: %(data)s', {'data': data})
 
-                yield data
-            except ValueError:
-                # Raised by FunctionID(key)
-                self.__logger.error('Received invalid function id in data: %(data)s', {'data': data})
                 yield data
             except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection

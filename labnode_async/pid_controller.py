@@ -49,7 +49,8 @@ class PidController:  # pylint: disable=too-many-public-methods
         # but wrong non the less. They are "off by 1" with the conversion of the
         # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
         # Return %rH (above liquid water water), rH values below 0°C need to be compensated.
-        FunctionID.GET_HUMIDITY: lambda x: max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)
+        FunctionID.GET_HUMIDITY: lambda x: max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0),
+        FunctionID.GET_MAC_ADDRESS: lambda x: bytearray(x),
     }
 
     @property
@@ -101,67 +102,84 @@ class PidController:  # pylint: disable=too-many-public-methods
             return result[key]
 
     async def send_multi_request(self, data):
-        return await self.__ipcon.send_request(
+        if self.__api_version < (0, 11, 0):
+            # We need to rewrite some function ids
+            if FunctionID.GET_HUMIDITY in data:
+                data[-21] = data[FunctionID.GET_HUMIDITY]
+                del data[FunctionID.GET_HUMIDITY]
+            if FunctionID.GET_BOARD_TEMPERATURE in data:
+                data[-20] = data[FunctionID.GET_BOARD_TEMPERATURE]
+                del data[FunctionID.GET_BOARD_TEMPERATURE]
+
+        result = await self.__ipcon.send_request(
             data=data,
             response_expected=True
         )
+
+        if self.__api_version < (0, 11, 0):
+            # We need to rewrite some function ids
+            if -21 in result:
+                result[FunctionID.GET_HUMIDITY.value] = result[-21]
+                del result[-21]
+            if -20 in result:
+                result[FunctionID.GET_BOARD_TEMPERATURE.value] = result[-20]
+                del result[-20]
+
+        try:
+            result = {FunctionID(key) : value for key, value in result.items()}
+        except ValueError:
+            # Raised by FunctionID(key)
+            self.__logger.error('Received unknown function id in data: %(data)s', {'data': data})
+            return result
+        return result
 
     async def get_software_version(self):
         """
         Returns The software version running on the device
         """
-        return await self.__send_single_request(FunctionID.GET_SOFTWARE_VERSION)
+        return await self.get_by_function_id(FunctionID.GET_SOFTWARE_VERSION)
 
     async def get_hardware_version(self):
         """
         Returns The hardware version of the device
         """
-        return await self.__send_single_request(FunctionID.GET_HARDWARE_VERSION)
+        return await self.get_by_function_id(FunctionID.GET_HARDWARE_VERSION)
 
     async def get_serial(self):
         """
         Returns The serial number of the device
         """
-        return await self.__send_single_request(FunctionID.GET_SERIAL_NUMBER)
+        return await self.get_by_function_id(FunctionID.GET_SERIAL_NUMBER)
 
     async def get_device_temperature(self):
         """
         Returns The temperature of the onboard sensor
         """
-        if self.__api_version >= (0, 11, 0):
-            result = await self.__send_single_request(FunctionID.GET_BOARD_TEMPERATURE)
-        else:
-            result = await self.__send_single_request(-20)
-        return PidController.RAW_TO_UNIT[FunctionID.GET_BOARD_TEMPERATURE](result)
+        return await self.get_by_function_id(FunctionID.GET_BOARD_TEMPERATURE)
 
     async def get_humidity(self):
         """
         Returns The humidity as read by the onboard sensor
         """
-        if self.__api_version >= (0, 11, 0):
-            result = await self.__send_single_request(FunctionID.GET_HUMIDITY)
-        else:
-            result = await self.__send_single_request(-21)
-        return PidController.RAW_TO_UNIT[FunctionID.GET_HUMIDITY](result)
+        return await self.get_by_function_id(FunctionID.GET_HUMIDITY)
 
     async def get_mac_address(self):
         """
         Returns The MAC address used by the ethernet port
         """
-        result = await self.__send_single_request(FunctionID.GET_MAC_ADDRESS)
-        return bytearray(result)
+        return await self.get_by_function_id(FunctionID.GET_MAC_ADDRESS)
 
     async def set_mac_address(self, mac):
         """
         Set the MAC address used by the ethernet port
         """
-        await self.__send_single_request(FunctionID.SET_MAC_ADDRESS, mac)
+        await self.get_by_function_id(FunctionID.SET_MAC_ADDRESS, mac)
 
     async def get_auto_resume(self):
         """
         Returns The MAC address used by the ethernet port
         """
-        return await self.__send_single_request(FunctionID.GET_AUTO_RESUME)
+        return await self.get_by_function_id(FunctionID.GET_AUTO_RESUME)
 
     async def set_auto_resume(self, value):
         """
@@ -182,7 +200,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Get the minium allowed output of the DAC in bit values
         """
-        return await self.__send_single_request(FunctionID.GET_LOWER_OUTPUT_LIMIT)
+        return await self.get_by_function_id(FunctionID.GET_LOWER_OUTPUT_LIMIT)
 
     async def set_upper_output_limit(self, limit):
         """
@@ -197,7 +215,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Get the minium allowed output of the DAC in bit values
         """
-        return await self.__send_single_request(FunctionID.GET_UPPER_OUTPUT_LIMIT)
+        return await self.get_by_function_id(FunctionID.GET_UPPER_OUTPUT_LIMIT)
 
     async def set_timeout(self, timeout):
         """
@@ -206,7 +224,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         await self.__send_single_request(FunctionID.SET_TIMEOUT, int(timeout))
 
     async def get_timeout(self):
-        return await self.__send_single_request(FunctionID.GET_TIMEOUT)
+        return await self.get_by_function_id(FunctionID.GET_TIMEOUT)
 
     async def set_dac_gain(self, enable):
         """
@@ -215,7 +233,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         await self.__send_single_request(FunctionID.SET_GAIN, bool(enable))
 
     async def is_dac_gain_enabled(self):
-        return await self.__send_single_request(FunctionID.GET_GAIN)
+        return await self.get_by_function_id(FunctionID.GET_GAIN)
 
     async def set_pid_feedback_direction(self, feedback):
         """
@@ -229,19 +247,19 @@ class PidController:  # pylint: disable=too-many-public-methods
         await self.__send_single_request(FunctionID.SET_DIRECTION, feedback.value)
 
     async def get_pid_feedback_direction(self):
-        return FeedbackDirection(await self.__send_single_request(FunctionID.GET_DIRECTION))
+        return FeedbackDirection(await self.get_by_function_id(FunctionID.GET_DIRECTION))
 
     async def set_output(self, value):
         await self.__send_single_request(FunctionID.SET_OUTPUT, int(value))
 
     async def get_output(self):
-        return await self.__send_single_request(FunctionID.GET_OUTPUT)
+        return await self.get_by_function_id(FunctionID.GET_OUTPUT)
 
     async def set_enabled(self, enabled):
         await self.__send_single_request(FunctionID.SET_ENABLED, bool(enabled))
 
     async def is_enabled(self):
-        return await self.__send_single_request(FunctionID.GET_ENABLED)
+        return await self.get_by_function_id(FunctionID.GET_ENABLED)
 
     async def __set_kx(self, function_id, kx):
         """
@@ -262,7 +280,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Get the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        return await self.__send_single_request(FunctionID.GET_KP)
+        return await self.get_by_function_id(FunctionID.GET_KP)
 
     async def set_ki(self, ki):  # pylint: disable=invalid-name
         """
@@ -274,7 +292,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Get the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        return await self.__send_single_request(FunctionID.GET_KI)
+        return await self.get_by_function_id(FunctionID.GET_KI)
 
     async def set_kd(self, kd):  # pylint: disable=invalid-name
         """
@@ -286,7 +304,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        return await self.__send_single_request(FunctionID.GET_KD)
+        return await self.get_by_function_id(FunctionID.GET_KD)
 
     async def set_secondary_kp(self, kp):  # pylint: disable=invalid-name
         """
@@ -302,7 +320,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         Get the PID Kp parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
         if self.__api_version >= (0, 11, 0):
-            return await self.__send_single_request(FunctionID.GET_SECONDARY_KP)
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KP)
         else:
             raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
 
@@ -320,7 +338,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         Get the PID Ki parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
         if self.__api_version >= (0, 11, 0):
-            return await self.__send_single_request(FunctionID.GET_SECONDARY_KI)
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KI)
         else:
             raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
 
@@ -338,7 +356,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         Get the PID Kd parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
         if self.__api_version >= (0, 11, 0):
-            return await self.__send_single_request(FunctionID.GET_SECONDARY_KD)
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KD)
         else:
             raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
 
@@ -354,6 +372,7 @@ class PidController:  # pylint: disable=too-many-public-methods
             request[FunctionID.GET_OUTPUT] = None
         result = await self.send_multi_request(request)
 
+        # We need to test for errors, which would normaly be done by __send_single_request()
         self.__test_for_errors(result, FunctionID.SET_INPUT)
         if return_output:
             return result[FunctionID.GET_OUTPUT]
@@ -371,7 +390,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         Get the PID setpoint. The value is in Q16.16 format
         """
-        return await self.__send_single_request(FunctionID.GET_SETPOINT)
+        return await self.get_by_function_id(FunctionID.GET_SETPOINT)
 
     async def set_calibration_offset(self, value):
         """
@@ -388,7 +407,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         Returns The offset, which is subtracted from the internal temperature sensor when running in fallback mode. The
         return value is in units of K
         """
-        return await self.__send_single_request(FunctionID.GET_CALIBRATION_OFFSET)
+        return await self.get_by_function_id(FunctionID.GET_CALIBRATION_OFFSET)
 
     async def set_fallback_update_interval(self, value):
         """
@@ -406,7 +425,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         Returns The update interval, which is used when running in fallback mode. The
         return value is in units of K
         """
-        return await self.__send_single_request(FunctionID.GET_FALLBACK_UPDATE_INTERVAL)
+        return await self.get_by_function_id(FunctionID.GET_FALLBACK_UPDATE_INTERVAL)
 
     async def reset(self):
         """
@@ -427,22 +446,18 @@ class PidController:  # pylint: disable=too-many-public-methods
             raise ValueError("Invalid serial number") from None
 
     async def get_active_connection_count(self):
-        return await self.__send_single_request(FunctionID.GET_ACTIVE_CONNECTION_COUNT)
+        return await self.get_by_function_id(FunctionID.GET_ACTIVE_CONNECTION_COUNT)
 
     async def get_by_function_id(self, function_id):
-        if self.__api_version >= (0, 11, 0):
-            try:
-                function_id = FunctionID(function_id)
-            except ValueError:
-                raise InvalidCommandError(f"{function_id} is invalid.") from None
-            assert function_id.value < 0    # all getter have negative ids
+        try:
+            function_id = FunctionID(function_id)
+        except ValueError:
+            raise InvalidCommandError(f"{function_id} is invalid.") from None
+        assert function_id.value < 0    # all getter have negative ids
 
         result = await self.__send_single_request(function_id)
-        if self.__api_version < (0, 11, 0):
-            function_id = FunctionID.GET_BOARD_TEMPERATURE if function_id == -20 else function_id
-            function_id = FunctionID.GET_HUMIDITY if function_id == -21 else function_id
 
-            if function_id in PidController.RAW_TO_UNIT:
-                result = PidController.RAW_TO_UNIT[function_id](result)
+        if function_id in PidController.RAW_TO_UNIT:
+            result = PidController.RAW_TO_UNIT[function_id](result)
 
         return result
