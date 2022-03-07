@@ -23,7 +23,7 @@ import logging
 import warnings
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
-from .errors import FunctionNotImplementedError, NotInitializedError, InvalidReplyError, InvalidFormatError, InvalidModeError
+from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, InvalidReplyError, NotInitializedError
 
 
 @unique
