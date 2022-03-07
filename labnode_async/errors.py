@@ -17,23 +17,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-class NotInitializedError(Exception):
+class LabnodeException(Exception):
     pass
 
 
-class InvalidReplyError(Exception):
+class NotInitializedError(LabnodeException):
     pass
 
 
-class InvalidModeError(Exception):
+class InvalidReplyError(LabnodeException):
     pass
 
 
-class FunctionNotImplementedError(Exception):
+class InvalidModeError(LabnodeException):
     pass
 
-class InvalidCommandError(Exception):
+
+class FunctionNotImplementedError(LabnodeException):
     pass
 
-class InvalidFormatError(Exception):
+
+class InvalidCommandError(LabnodeException):
+    pass
+
+
+class InvalidFormatError(LabnodeException):
     pass
