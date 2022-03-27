@@ -56,7 +56,7 @@ class IPConnection:
         return self.__writer is not None and not self.__writer.is_closing()
 
     @property
-    def host(self):
+    def hostname(self):
         """
         Returns The hostname of the connection
         """
