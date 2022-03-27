@@ -60,6 +60,13 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         return self.__api_version
 
+    @property
+    def ipcon(self):
+        """
+        Returns The ip connection used by the device
+        """
+        return self.__ipcon
+
     def __init__(self, ipcon, api_version):
         self.__api_version = api_version
         self.__ipcon = ipcon
