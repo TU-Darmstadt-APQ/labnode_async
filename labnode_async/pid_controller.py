@@ -452,7 +452,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         try:
             function_id = FunctionID(function_id)
         except ValueError:
-            raise InvalidCommandError(f"{function_id} is invalid.") from None
+            raise InvalidCommandError(f"Command {function_id} is invalid.") from None
         assert function_id.value < 0    # all getter have negative ids
 
         result = await self.__send_single_request(function_id)

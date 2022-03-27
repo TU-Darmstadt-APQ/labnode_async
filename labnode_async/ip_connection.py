@@ -55,6 +55,20 @@ class IPConnection:
         """
         return self.__writer is not None and not self.__writer.is_closing()
 
+    @property
+    def host(self):
+        """
+        Returns The hostname of the connection
+        """
+        return self.__host
+
+    @property
+    def port(self):
+        """
+        Returns The port used by the connection
+        """
+        return self.__port
+
     def __init__(self, host=None, port=4223, timeout=2.5):
         """
         Parameters
