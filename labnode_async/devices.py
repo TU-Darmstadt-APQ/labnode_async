@@ -17,11 +17,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-from enum import IntEnum, unique  # We use IntEnum, because those can be easily serialized using the standard CBOR converter
+from enum import IntEnum, unique
 
 
-@unique
 class FunctionID(IntEnum):
+    """
+    These are the function calls supported by all Labnodes
+    """
+    REQUEST_ID = 0
+    SET_SERIAL_NUMBER = 12
+    RESET = 30
+    RESET_SETTINGS = 31
+
+    GET_ACTIVE_CONNECTION_COUNT = -28
+    GET_DEVICE_TYPE = -29
+    GET_SOFTWARE_VERSION = -30
+    GET_HARDWARE_VERSION = -31
+    GET_API_VERSION = -32
+
+    INVALID_FORMAT = 251
+
+# We use IntEnum, because those can be easily serialized using the standard CBOR converter
+@unique
+class PidFunctionID(IntEnum):
+    """
+    These are the function calls supported by the Labnode PID controllers
+    """
     REQUEST_ID = 0
     SET_INPUT = 1
     SET_KP = 2
@@ -79,8 +100,12 @@ class FunctionID(IntEnum):
 
     INVALID_FORMAT = 251
 
+
 @unique
 class ErrorCode(IntEnum):
+    """
+    Error codes raised by Labnodes
+    """
     INVALID_PARAMETER_TYPE = 248
     ACK = 249
     INVALID_MODE = 250
@@ -92,4 +117,7 @@ class ErrorCode(IntEnum):
 
 @unique
 class DeviceIdentifier(IntEnum):
+    """
+    The device codes used by all Labnodes to identify themselves
+    """
     PID = 0

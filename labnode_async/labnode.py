@@ -23,28 +23,42 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from labnode_async import IPConnection
-
-from labnode_async.devices import DeviceIdentifier
+    from labnode_async.devices import DeviceIdentifier
 
 
 class Labnode(ABC):
+    """
+    The labnode base class used by all Labnode devices
+    """
 
+    @classmethod
     @property
     @abstractmethod
-    def device_identifier(self) -> DeviceIdentifier:
-        pass
+    def device_identifier(cls) -> DeviceIdentifier:
+        """
+        Returns
+        -------
+        DeviceIdentifier
+            The device identifier version of the device
+        """
 
     @property
     def api_version(self) -> tuple[int, int, int]:
         """
-        Returns The API version used by the device to communicate
+        Returns
+        -------
+        tuple
+            The API version used by the device to communicate
         """
         return self.__api_version
 
     @property
     def connection(self) -> IPConnection:
         """
-        Returns The ip connection used by the device
+        Returns
+        -------
+        IPConnection
+            The ip connection used by the device
         """
         return self.__connection
 
@@ -54,12 +68,27 @@ class Labnode(ABC):
 
     @abstractmethod
     async def get_software_version(self) -> tuple[int, int, int]:
-        pass
+        """
+        Returns
+        -------
+        tuple
+            The firmware version of the device
+        """
 
     @abstractmethod
     async def get_hardware_version(self) -> tuple[int, int, int]:
-        pass
+        """
+        Returns
+        -------
+        tuple
+            The hardware version of the device
+        """
 
     @abstractmethod
     async def get_serial(self) -> int:
-        pass
+        """
+        Returns
+        -------
+        int
+            The serial number of the device
+        """

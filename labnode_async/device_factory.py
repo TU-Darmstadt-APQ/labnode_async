@@ -22,12 +22,13 @@ The device factory which allows creating instances of Labnodes from their device
 """
 from __future__ import annotations
 from typing import Any, Type, TYPE_CHECKING
-if TYPE_CHECKING:
-    from labnode_async import IPConnection
 
 from .devices import DeviceIdentifier
 from .labnode import Labnode
 from .pid_controller import PidController
+
+if TYPE_CHECKING:
+    from .ip_connection import IPConnection
 
 
 class DeviceFactory:
@@ -76,5 +77,6 @@ class DeviceFactory:
             raise ValueError(f"No device available for id {device_id}") from None
 
 
+# Register all available Labnode classes here to make them available automatically to the ip connection
 device_factory = DeviceFactory()
 device_factory.register(PidController)
