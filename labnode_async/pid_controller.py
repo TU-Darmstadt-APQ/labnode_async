@@ -18,7 +18,6 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 from enum import Enum, unique
-from decimal import Decimal
 import logging
 import warnings
 from typing import Any, Optional, Tuple
@@ -40,17 +39,6 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     DEVICE_IDENTIFIER = DeviceIdentifier.PID
 
     RAW_TO_UNIT = {
-        # The datasheet is *wrong* about the conversion formula. Slightly wrong
-        # but wrong non the less. They are "off by 1" with the conversion of the
-        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        # Return Kelvin
-        FunctionID.GET_BOARD_TEMPERATURE: lambda x: Decimal("175.72") * x / (2**16 - 1) + Decimal("226.3"),
-        # We need to truncate to 100 %rH according to the datasheet
-        # The datasheet is *wrong* about the conversion formula. Slightly wrong
-        # but wrong non the less. They are "off by 1" with the conversion of the
-        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        # Return %rH (above liquid water water), rH values below 0°C need to be compensated.
-        FunctionID.GET_HUMIDITY: lambda x: max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0),
         FunctionID.GET_MAC_ADDRESS: lambda x: bytearray(x),
     }
 
@@ -271,104 +259,99 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     async def is_enabled(self) -> bool:
         return await self.get_by_function_id(FunctionID.GET_ENABLED)
 
-    async def __set_kx(self, function_id, kx):
+    async def __set_kx(self, function_id: FunctionID, kx: int) -> None:
         """
         Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
+        if self.__api_version < (0, 11, 0) and function_id in(FunctionID.SET_SECONDARY_KP, FunctionID.SET_SECONDARY_KI, FunctionID.SET_SECONDARY_KD):
+            raise FunctionNotImplementedError(f"{function_id.name} is only supported in api version >= 0.11.0")
         try:
             await self.__send_single_request(function_id, int(kx))
         except InvalidFormatError:
             raise ValueError("Invalid PID constant") from None
 
-    async def set_kp(self, kp):  # pylint: disable=invalid-name
+    async def set_kp(self, kp: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
         Set the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        await self.__set_kx(FunctionID.SET_KP, kp)
 
-    async def get_kp(self):
+        Parameters
+        ----------
+        kp: int
+            The PID k_p paramter in Q16.16 format
+        config_id: {0, 1}
+            The id of the parameter set. The controller supports two pid parameter sets.
+            Either 0 or 1.
+        """
+        assert config_id in (0,1)
+        if config_id == 0:
+            await self.__set_kx(FunctionID.SET_KP, kp)
+        else:
+            await self.__set_kx(FunctionID.SET_SECONDARY_KP, kp)
+
+    async def get_kp(self, config_id: int = 0) -> int:
         """
         Get the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        return await self.get_by_function_id(FunctionID.GET_KP)
 
-    async def set_ki(self, ki):  # pylint: disable=invalid-name
+        Parameters
+        ----------
+        config_id: {0, 1}
+            The id of the parameter set. The controller supports two pid parameter sets.
+            Either 0 or 1.
+        """
+        assert config_id in (0,1)
+        if config_id == 0:
+            return await self.get_by_function_id(FunctionID.GET_KP)
+        else:
+            if self.__api_version >= (0, 11, 0):
+                return await self.get_by_function_id(FunctionID.GET_SECONDARY_KP)
+            else:
+                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
+
+    async def set_ki(self, ki: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
         Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        await self.__set_kx(FunctionID.SET_KI, ki)
+        assert config_id in (0,1)
+        if config_id == 0:
+            await self.__set_kx(FunctionID.SET_KI, ki)
+        else:
+            await self.__set_kx(FunctionID.SET_SECONDARY_KI, ki)
 
-    async def get_ki(self):
+    async def get_ki(self, config_id: int = 0) -> int:
         """
         Get the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        return await self.get_by_function_id(FunctionID.GET_KI)
+        assert config_id in (0,1)
+        if config_id == 0:
+            return await self.get_by_function_id(FunctionID.GET_KI)
+        else:
+            if self.__api_version >= (0, 11, 0):
+                return await self.get_by_function_id(FunctionID.GET_SECONDARY_KI)
+            else:
+                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
 
-    async def set_kd(self, kd):  # pylint: disable=invalid-name
+    async def set_kd(self, kd: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
         Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        await self.__set_kx(FunctionID.SET_KD, kd)
+        assert config_id in (0,1)
+        if config_id == 0:
+            await self.__set_kx(FunctionID.SET_KD, kd)
+        else:
+            await self.__set_kx(FunctionID.SET_SECONDARY_KD, kd)
 
-    async def get_kd(self):
+    async def get_kd(self, config_id: int = 0) -> int:
         """
         Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        return await self.get_by_function_id(FunctionID.GET_KD)
-
-    async def set_secondary_kp(self, kp):  # pylint: disable=invalid-name
-        """
-        Set the PID Kp parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        if self.__api_version >= (0, 11, 0):
-            await self.__set_kx(FunctionID.SET_SECONDARY_KP, kp)
+        assert config_id in (0,1)
+        if config_id == 0:
+            return await self.get_by_function_id(FunctionID.GET_KD)
         else:
-            raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
-
-    async def get_secondary_kp(self):
-        """
-        Get the PID Kp parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        if self.__api_version >= (0, 11, 0):
-            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KP)
-        else:
-            raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
-
-    async def set_secondary_ki(self, ki):  # pylint: disable=invalid-name
-        """
-        Set the PID Ki parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        if self.__api_version >= (0, 11, 0):
-            await self.__set_kx(FunctionID.SET_SECONDARY_KI, ki)
-        else:
-            raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
-
-    async def get_secondary_ki(self):
-        """
-        Get the PID Ki parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        if self.__api_version >= (0, 11, 0):
-            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KI)
-        else:
-            raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
-
-    async def set_secondary_kd(self, kd):  # pylint: disable=invalid-name
-        """
-        Set the PID Kd parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        if self.__api_version >= (0, 11, 0):
-            await self.__set_kx(FunctionID.SET_SECONDARY_KD, kd)
-        else:
-            raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
-
-    async def get_secondary_kd(self):
-        """
-        Get the PID Kd parameter used by the secondary input. The Kp, Ki, Kd parameters are stored in Q16.16 format
-        """
-        if self.__api_version >= (0, 11, 0):
-            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KD)
-        else:
-            raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
+            if self.__api_version >= (0, 11, 0):
+                return await self.get_by_function_id(FunctionID.GET_SECONDARY_KD)
+            else:
+                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
 
     async def set_input(self, value: int, return_output: bool = False) -> None:
         """
@@ -387,37 +370,52 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         if return_output:
             return result[FunctionID.GET_OUTPUT]
 
-    async def set_setpoint(self, value):
+    async def set_setpoint(self, value: int, config_id: int = 0) -> None:
         """
         Set the PID setpoint. The value is in Q16.16 format
         """
+        assert config_id in (0,1)
         try:
-            await self.__send_single_request(FunctionID.SET_SETPOINT, int(value))
+            if config_id == 0:
+                await self.__send_single_request(FunctionID.SET_SETPOINT, int(value))
+            else:
+                if self.__api_version >= (0, 11, 0):
+                    return await self.get_by_function_id(FunctionID.SET_SECONDARY_SETPOINT, int(value))
+                else:
+                    raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_SETPOINT.name} is only supported in api version >= 0.11.0")
         except InvalidFormatError:
             raise ValueError("Invalid setpoint") from None
 
-    async def get_setpoint(self):
+    async def get_setpoint(self, config_id: int = 0) -> int:
         """
         Get the PID setpoint. The value is in Q16.16 format
         """
-        return await self.get_by_function_id(FunctionID.GET_SETPOINT)
+        assert config_id in (0,1)
+        if config_id == 0:
+            return await self.get_by_function_id(FunctionID.GET_SETPOINT)
+        else:
+            if self.__api_version >= (0, 11, 0):
+                return await self.get_by_function_id(FunctionID.GET_SECONDARY_SETPOINT)
+            else:
+                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_SETPOINT.name} is only supported in api version >= 0.11.0")
 
-    async def set_calibration_offset(self, value):
+    async def set_secondary_config(self, config_id: int) -> None:
         """
         Set the offset added to the internal temperature sensor, when running in fallback mode. The value is
         a floating point number in units of K
         """
+        assert config_id in (0,1)
         try:
-            await self.__send_single_request(FunctionID.SET_CALIBRATION_OFFSET, float(value))
+            await self.__send_single_request(FunctionID.SET_SECONDARY_PID_PARAMETER_SET, int(config_id))
         except InvalidFormatError:
-            raise ValueError("Invalid calibration offset") from None
+            raise ValueError("Invalid configuration set. Use either 0 or 1.") from None
 
-    async def get_calibration_offset(self):
+    async def get_secondary_config(self) -> int:
         """
         Returns The offset, which is subtracted from the internal temperature sensor when running in fallback mode. The
         return value is in units of K
         """
-        return await self.get_by_function_id(FunctionID.GET_CALIBRATION_OFFSET)
+        return await self.get_by_function_id(FunctionID.GET_SECONDARY_PID_PARAMETER_SET)
 
     async def set_fallback_update_interval(self, value: int):
         """

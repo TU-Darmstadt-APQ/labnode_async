@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# Copyright (C) 2020  Patrick Baus
+# Copyright (C) 2022  Patrick Baus
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,10 +36,14 @@ class FunctionID(IntEnum):
     SET_OUTPUT = 11
     SET_SERIAL_NUMBER = 12
     SET_GAIN = 13
-    SET_CALIBRATION_OFFSET = 14
+    SET_SECONDARY_SETPOINT = 14
     SET_MAC_ADDRESS = 15
     SET_AUTO_RESUME = 16
     SET_FALLBACK_UPDATE_INTERVAL = 17
+    SET_SECONDARY_KP = 18
+    SET_SECONDARY_KI = 19
+    SET_SECONDARY_KD = 20
+    SET_SECONDARY_PID_PARAMETER_SET = 21
     RESET = 30
     RESET_SETTINGS = 31
 
@@ -56,13 +60,14 @@ class FunctionID(IntEnum):
     GET_OUTPUT = -11
     GET_SERIAL_NUMBER = -12
     GET_GAIN = -13
-    GET_CALIBRATION_OFFSET = -14
+    GET_SECONDARY_SETPOINT = -14
     GET_MAC_ADDRESS = -15
     GET_AUTO_RESUME = -16
     GET_FALLBACK_UPDATE_INTERVAL = -17
     GET_SECONDARY_KP = -18
     GET_SECONDARY_KI = -19
     GET_SECONDARY_KD = -20
+    GET_SECONDARY_PID_PARAMETER_SET = -21
     GET_BOARD_TEMPERATURE = -25
     GET_HUMIDITY = -26
     CALLBACK_UPDATE_VALUE = -27
