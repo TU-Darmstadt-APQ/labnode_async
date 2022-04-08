@@ -127,7 +127,7 @@ class IPConnection:
         device_id, api_version = await self.get_device_id()
         return device_factory.get(device_id, self, api_version=api_version)
 
-    async def send_request(self, data: dict, response_expected: bool = False) -> Any:
+    async def send_request(self, data: dict, response_expected: bool = False) -> Optional[dict]:
         if not self.is_connected:
             raise NotConnectedError("Labnode IP connection not connected.")
         # If we are waiting for a response, send the request, then pass on the response as a future

@@ -18,7 +18,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 """
-The device factory which allows to create instances of Labnodes from their device id
+The device factory which allows creating instances of Labnodes from their device id
 """
 from typing import Any
 
@@ -29,7 +29,7 @@ from .pid_controller import PidController
 
 class DeviceFactory:
     """
-    A senor host factory to select the correct driver for given database
+    A sensor host factory to select the correct driver for given database
     config.
     """
     def __init__(self) -> None:
@@ -41,10 +41,8 @@ class DeviceFactory:
 
         Parameters
         ----------
-        driver: str
-            A string identifying the driver.
-        host: SensorHost
-            The host driver to register.
+        device: Labnode
+            A Labnode device to be registered with the factory.
         """
         self.__available_devices[device.DEVICE_IDENTIFIER] = device
 
@@ -55,12 +53,14 @@ class DeviceFactory:
 
         Parameters
         ----------
+        connection: ip_connection.IPConnection
+            The ip connection to be used by the device
         device_id: devices.DeviceIdentifier
             The device specific id
 
         Returns
         -------
-        Any
+        Labnode
             The labnode device
 
         Raises
@@ -71,6 +71,7 @@ class DeviceFactory:
             return self.__available_devices[device_id](connection, *args, **kwargs)
         except KeyError:
             raise ValueError(f'No device available for id {device_id}') from None
+
 
 device_factory = DeviceFactory()
 device_factory.register(PidController)

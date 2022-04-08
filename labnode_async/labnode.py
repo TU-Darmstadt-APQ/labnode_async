@@ -17,6 +17,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+from typing import Tuple
+
 
 class Labnode:
-    pass
+    @property
+    def api_version(self) -> Tuple:
+        """
+        Returns The API version used by the device to communicate
+        """
+        return self.__api_version
+
+    @property
+    def ipcon(self) -> 'IPConnection':
+        """
+        Returns The ip connection used by the device
+        """
+        return self.__ipcon
+
+    def __init__(self, ipcon: 'IPConnection', api_version: Tuple) -> None:
+        self.__api_version = api_version
+        self.__ipcon = ipcon
