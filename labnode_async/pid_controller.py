@@ -20,7 +20,7 @@
 from enum import Enum, unique
 import logging
 import warnings
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
 from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, InvalidReplyError, NotInitializedError
@@ -40,11 +40,11 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     DEVICE_IDENTIFIER = DeviceIdentifier.PID
 
     RAW_TO_UNIT = {
-        FunctionID.GET_MAC_ADDRESS: lambda x: bytearray(x),
+        FunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
-    def __init__(self, ipcon: 'IPConnection', api_version: Tuple) -> None:
-        super().__init__(ipcon, api_version)
+    def __init__(self, connection: 'IPConnection', api_version: tuple[int, int, int]) -> None:
+        super().__init__(connection, api_version)
         self.__logger = logging.getLogger(__name__)
 
     @staticmethod
@@ -56,15 +56,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
                 raise InvalidModeError(
                     "The controller is set to the wrong mode. Disable it to set the output, enable it to set the input"
                 )
-            elif status is ErrorCode.INVALID_COMMAND:
+            if status is ErrorCode.INVALID_COMMAND:
                 raise TypeError(f"The command '{key}' is invalid")
-            elif status is ErrorCode.INVALID_PARAMETER_TYPE:
+            if status is ErrorCode.INVALID_PARAMETER_TYPE:
                 raise ValueError(f"Invalid value for request {key}")
-            elif status is ErrorCode.NOT_INITIALIZED:
-                raise NotInitializedError("PID controller not initialized, Make sure kp, ki, kd and the setpoint is set")
-            elif status is ErrorCode.NOT_IMPLEMENTED:
+            if status is ErrorCode.NOT_INITIALIZED:
+                raise NotInitializedError(
+                    "PID controller not initialized, Make sure kp, ki, kd and the setpoint is set"
+                )
+            if status is ErrorCode.NOT_IMPLEMENTED:
                 raise FunctionNotImplementedError(f"The function {key} is not implemented")
-            elif status is ErrorCode.DEPRECATED:
+            if status is ErrorCode.DEPRECATED:
                 warnings.warn(f"The function {key} is deprecated", DeprecationWarning)
 
         # If the controller cannot parse the packet, it will answer with an INVALID_FORMAT error
@@ -73,7 +75,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             raise InvalidFormatError("Invalid data format. Check the datatype")
         if key not in result:
             # This can only happen, if another process is using the same sequence_number
-            raise InvalidReplyError(f"Invalid reply received. Wrong reply for request id {key}. Is someone using the same socket? Data: {result}")
+            raise InvalidReplyError(
+                f"Invalid reply received for request id {key}. Is someone using the same socket? Data: {result}"
+            )
 
     async def __send_single_request(self, key: int, value: Optional[Any] = None) -> Any:
         result = await self.send_multi_request(
@@ -83,8 +87,8 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
         if key > 0:
             return ErrorCode(result[key])
-        else:
-            return result[key]
+
+        return result[key]
 
     async def send_multi_request(self, data: dict) -> dict:
         if self.api_version < (0, 11, 0):
@@ -96,7 +100,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
                 data[-20] = data[FunctionID.GET_BOARD_TEMPERATURE]
                 del data[FunctionID.GET_BOARD_TEMPERATURE]
 
-        result = await self.ipcon.send_request(
+        result = await self.connection.send_request(
             data=data,
             response_expected=True
         )
@@ -114,17 +118,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             result = {FunctionID(key): value for key, value in result.items()}
         except ValueError:
             # Raised by FunctionID(key)
-            self.__logger.error('Received unknown function id in data: %(data)s', {'data': data})
+            self.__logger.error("Received unknown function id in data: %(data)s", {'data': data})
             return result
         return result
 
-    async def get_software_version(self) -> Tuple:
+    async def get_software_version(self) -> tuple[int, int, int]:
         """
         Returns The software version running on the device
         """
         return await self.get_by_function_id(FunctionID.GET_SOFTWARE_VERSION)
 
-    async def get_hardware_version(self) -> Tuple:
+    async def get_hardware_version(self) -> tuple[int, int, int]:
         """
         Returns The hardware version of the device
         """
@@ -148,13 +152,13 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         return await self.get_by_function_id(FunctionID.GET_HUMIDITY)
 
-    async def get_mac_address(self) -> Tuple:
+    async def get_mac_address(self) -> bytearray:
         """
         Returns The MAC address used by the ethernet port
         """
         return await self.get_by_function_id(FunctionID.GET_MAC_ADDRESS)
 
-    async def set_mac_address(self, mac: Tuple[int, int, int, int, int, int]) -> None:
+    async def set_mac_address(self, mac: bytearray) -> None:
         """
         Set the MAC address used by the ethernet port
         """
@@ -289,11 +293,13 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert config_id in (0, 1)
         if config_id == 0:
             return await self.get_by_function_id(FunctionID.GET_KP)
-        else:
-            if self.api_version >= (0, 11, 0):
-                return await self.get_by_function_id(FunctionID.GET_SECONDARY_KP)
-            else:
-                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KP.name} is only supported in api version >= 0.11.0")
+
+        if self.api_version >= (0, 11, 0):
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KP)
+
+        raise FunctionNotImplementedError(
+            f"{FunctionID.GET_SECONDARY_KP.name} is only supported in api version >= 0.11.0"
+        )
 
     async def set_ki(self, ki: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
@@ -302,8 +308,8 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert config_id in (0, 1)
         if config_id == 0:
             await self.__set_kx(FunctionID.SET_KI, ki)
-        else:
-            await self.__set_kx(FunctionID.SET_SECONDARY_KI, ki)
+
+        await self.__set_kx(FunctionID.SET_SECONDARY_KI, ki)
 
     async def get_ki(self, config_id: int = 0) -> int:
         """
@@ -312,11 +318,13 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert config_id in (0, 1)
         if config_id == 0:
             return await self.get_by_function_id(FunctionID.GET_KI)
-        else:
-            if self.api_version >= (0, 11, 0):
-                return await self.get_by_function_id(FunctionID.GET_SECONDARY_KI)
-            else:
-                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KI.name} is only supported in api version >= 0.11.0")
+
+        if self.api_version >= (0, 11, 0):
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KI)
+
+        raise FunctionNotImplementedError(
+            f"{FunctionID.GET_SECONDARY_KI.name} is only supported in api version >= 0.11.0"
+        )
 
     async def set_kd(self, kd: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
@@ -335,11 +343,13 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert config_id in (0, 1)
         if config_id == 0:
             return await self.get_by_function_id(FunctionID.GET_KD)
-        else:
-            if self.api_version >= (0, 11, 0):
-                return await self.get_by_function_id(FunctionID.GET_SECONDARY_KD)
-            else:
-                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
+
+        if self.api_version >= (0, 11, 0):
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_KD)
+
+        raise FunctionNotImplementedError(
+            f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0"
+        )
 
     async def set_input(self, value: int, return_output: bool = False) -> None:
         """
@@ -370,7 +380,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
                 if self.api_version >= (0, 11, 0):
                     await self.__send_single_request(FunctionID.SET_SECONDARY_SETPOINT, int(value))
                 else:
-                    raise FunctionNotImplementedError(f"{FunctionID.SET_SECONDARY_SETPOINT.name} is only supported in api version >= 0.11.0")
+                    raise FunctionNotImplementedError(
+                        f"{FunctionID.SET_SECONDARY_SETPOINT.name} is only supported in api version >= 0.11.0"
+                    )
         except InvalidFormatError:
             raise ValueError("Invalid setpoint") from None
 
@@ -381,11 +393,13 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert config_id in (0, 1)
         if config_id == 0:
             return await self.get_by_function_id(FunctionID.GET_SETPOINT)
-        else:
-            if self.api_version >= (0, 11, 0):
-                return await self.get_by_function_id(FunctionID.GET_SECONDARY_SETPOINT)
-            else:
-                raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_SETPOINT.name} is only supported in api version >= 0.11.0")
+
+        if self.api_version >= (0, 11, 0):
+            return await self.get_by_function_id(FunctionID.GET_SECONDARY_SETPOINT)
+
+        raise FunctionNotImplementedError(
+            f"{FunctionID.GET_SECONDARY_SETPOINT.name} is only supported in api version >= 0.11.0"
+        )
 
     async def set_secondary_config(self, config_id: int) -> None:
         """

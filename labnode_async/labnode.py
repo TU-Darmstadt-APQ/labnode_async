@@ -17,24 +17,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-from typing import Tuple
+from abc import ABC, abstractmethod
 
 
-class Labnode:
+class Labnode(ABC):
     @property
-    def api_version(self) -> Tuple:
+    def api_version(self) -> tuple[int, int, int]:
         """
         Returns The API version used by the device to communicate
         """
         return self.__api_version
 
     @property
-    def ipcon(self) -> 'IPConnection':
+    def connection(self) -> 'IPConnection':
         """
         Returns The ip connection used by the device
         """
-        return self.__ipcon
+        return self.__connection
 
-    def __init__(self, ipcon: 'IPConnection', api_version: Tuple) -> None:
+    def __init__(self, connection: 'IPConnection', api_version: tuple[int, int, int]) -> None:
         self.__api_version = api_version
-        self.__ipcon = ipcon
+        self.__connection = connection
+
+    @abstractmethod
+    async def get_software_version(self) -> tuple[int, int, int]:
+        pass
+
+    @abstractmethod
+    async def get_hardware_version(self) -> tuple[int, int, int]:
+        pass
+
+    @abstractmethod
+    async def get_serial(self) -> int:
+        pass
