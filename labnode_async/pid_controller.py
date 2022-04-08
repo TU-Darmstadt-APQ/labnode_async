@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# Copyright (C) 2020  Patrick Baus
+# Copyright (C) 2022  Patrick Baus
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,10 +21,11 @@ from enum import Enum, unique
 from decimal import Decimal
 import logging
 import warnings
+from typing import Any, Optional, Tuple
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
 from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, InvalidReplyError, NotInitializedError
-
+from .labnode import Labnode
 
 @unique
 class FeedbackDirection(Enum):
@@ -32,7 +33,7 @@ class FeedbackDirection(Enum):
     POSITIVE = True
 
 
-class PidController:  # pylint: disable=too-many-public-methods
+class PidController(Labnode):  # pylint: disable=too-many-public-methods
     """
     A simple remote PID controller
     """
@@ -54,25 +55,26 @@ class PidController:  # pylint: disable=too-many-public-methods
     }
 
     @property
-    def api_version(self):
+    def api_version(self) -> Tuple:
         """
         Returns The API version used by the device to communicate
         """
         return self.__api_version
 
     @property
-    def ipcon(self):
+    def ipcon(self) -> 'IPConnection':
         """
         Returns The ip connection used by the device
         """
         return self.__ipcon
 
-    def __init__(self, ipcon, api_version):
+    def __init__(self, ipcon: 'IPConnection', api_version: Tuple) -> None:
         self.__api_version = api_version
         self.__ipcon = ipcon
+        self.__logger = logging.getLogger(__name__)
 
     @staticmethod
-    def __test_for_errors(result, key):
+    def __test_for_errors(result: dict, key: int):
         if key > 0:
             # We have a setter
             status = ErrorCode(result[key])
@@ -92,12 +94,12 @@ class PidController:  # pylint: disable=too-many-public-methods
         # If the controller cannot parse the packet, it will answer with an INVALID_FORMAT error
         # and throw away the input, so we do not get a reply to our request.
         if FunctionID.INVALID_FORMAT in result:
-            raise InvalidFormatError(f"Invalid data format. Check the datatype")
+            raise InvalidFormatError("Invalid data format. Check the datatype")
         if key not in result:
             # This can only happen, if another process is using the same sequence_number
             raise InvalidReplyError(f"Invalid reply received. Wrong reply for request id {key}. Is someone using the same socket? Data: {result}")
 
-    async def __send_single_request(self, key, value=None):
+    async def __send_single_request(self, key: int, value: Optional[Any] = None) -> None:
         result = await self.send_multi_request(
             data={key: value,}
         )
@@ -108,7 +110,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         else:
             return result[key]
 
-    async def send_multi_request(self, data):
+    async def send_multi_request(self, data: dict) -> None:
         if self.__api_version < (0, 11, 0):
             # We need to rewrite some function ids
             if FunctionID.GET_HUMIDITY in data:
@@ -140,109 +142,110 @@ class PidController:  # pylint: disable=too-many-public-methods
             return result
         return result
 
-    async def get_software_version(self):
+    async def get_software_version(self) -> Tuple:
         """
         Returns The software version running on the device
         """
         return await self.get_by_function_id(FunctionID.GET_SOFTWARE_VERSION)
 
-    async def get_hardware_version(self):
+    async def get_hardware_version(self) -> Tuple:
         """
         Returns The hardware version of the device
         """
         return await self.get_by_function_id(FunctionID.GET_HARDWARE_VERSION)
 
-    async def get_serial(self):
+    async def get_serial(self) -> int:
         """
         Returns The serial number of the device
         """
         return await self.get_by_function_id(FunctionID.GET_SERIAL_NUMBER)
 
-    async def get_device_temperature(self):
+    async def get_device_temperature(self) -> float:
         """
         Returns The temperature of the onboard sensor
         """
         return await self.get_by_function_id(FunctionID.GET_BOARD_TEMPERATURE)
 
-    async def get_humidity(self):
+    async def get_humidity(self) -> float:
         """
         Returns The humidity as read by the onboard sensor
         """
         return await self.get_by_function_id(FunctionID.GET_HUMIDITY)
 
-    async def get_mac_address(self):
+    async def get_mac_address(self) -> Tuple:
         """
         Returns The MAC address used by the ethernet port
         """
         return await self.get_by_function_id(FunctionID.GET_MAC_ADDRESS)
 
-    async def set_mac_address(self, mac):
+    async def set_mac_address(self, mac: Tuple) -> None:
         """
         Set the MAC address used by the ethernet port
         """
         await self.get_by_function_id(FunctionID.SET_MAC_ADDRESS, mac)
 
-    async def get_auto_resume(self):
+    async def get_auto_resume(self) -> bool:
         """
         Returns The MAC address used by the ethernet port
         """
         return await self.get_by_function_id(FunctionID.GET_AUTO_RESUME)
 
-    async def set_auto_resume(self, value):
+    async def set_auto_resume(self, value: bool):
         """
         Set the controller to autmatically load the previous settings and resume its action
         """
         await self.__send_single_request(FunctionID.SET_AUTO_RESUME, bool(value))
 
-    async def set_lower_output_limit(self, limit):
+    async def set_lower_output_limit(self, limit: int) -> None:
         """
         Set the minium allowed output of the DAC in bit values
         """
         try:
             await self.__send_single_request(FunctionID.SET_LOWER_OUTPUT_LIMIT, limit)
         except InvalidFormatError:
-            raise ValueError("Invalid limit")
+            raise ValueError("Invalid limit") from None
 
-    async def get_lower_output_limit(self):
+    async def get_lower_output_limit(self) -> int:
         """
         Get the minium allowed output of the DAC in bit values
         """
         return await self.get_by_function_id(FunctionID.GET_LOWER_OUTPUT_LIMIT)
 
-    async def set_upper_output_limit(self, limit):
+    async def set_upper_output_limit(self, limit: int) -> None:
         """
         Set the maximum allowed output of the DAC in bit values
         """
         try:
             await self.__send_single_request(FunctionID.SET_UPPER_OUTPUT_LIMIT, limit)
         except InvalidFormatError:
-            raise ValueError("Invalid limit")
+            raise ValueError("Invalid limit") from None
 
-    async def get_upper_output_limit(self):
+    async def get_upper_output_limit(self) -> int:
         """
         Get the minium allowed output of the DAC in bit values
         """
         return await self.get_by_function_id(FunctionID.GET_UPPER_OUTPUT_LIMIT)
 
-    async def set_timeout(self, timeout):
+    async def set_timeout(self, timeout: int) -> None:
         """
         Set the timeout, that defines when the controller switched to fallback mode. The time is in ms
         """
+        assert timeout > 0
         await self.__send_single_request(FunctionID.SET_TIMEOUT, int(timeout))
 
-    async def get_timeout(self):
+    async def get_timeout(self) -> int:
         return await self.get_by_function_id(FunctionID.GET_TIMEOUT)
 
-    async def set_dac_gain(self, enable):
+    async def set_dac_gain(self, enable: bool) -> None:
         """
         Set the gain of the DAC to x2. This will increase the output voltage range from 0..5V to 0..10V.
         """
         await self.__send_single_request(FunctionID.SET_GAIN, bool(enable))
 
-    async def is_dac_gain_enabled(self):
+    async def is_dac_gain_enabled(self) -> bool:
         return await self.get_by_function_id(FunctionID.GET_GAIN)
 
-    async def set_pid_feedback_direction(self, feedback):
+    async def set_pid_feedback_direction(self, feedback: FeedbackDirection) -> None:
         """
         Set the sign of the pid output. This needs to be adjusted according to the actuator used to
         control the plant. Typically it is assumed, that the feedback is negative. For example, when
@@ -253,19 +256,19 @@ class PidController:  # pylint: disable=too-many-public-methods
         feedback = FeedbackDirection(feedback)
         await self.__send_single_request(FunctionID.SET_DIRECTION, feedback.value)
 
-    async def get_pid_feedback_direction(self):
+    async def get_pid_feedback_direction(self) -> FeedbackDirection:
         return FeedbackDirection(await self.get_by_function_id(FunctionID.GET_DIRECTION))
 
-    async def set_output(self, value):
+    async def set_output(self, value: int) -> None:
         await self.__send_single_request(FunctionID.SET_OUTPUT, int(value))
 
-    async def get_output(self):
+    async def get_output(self) -> int:
         return await self.get_by_function_id(FunctionID.GET_OUTPUT)
 
-    async def set_enabled(self, enabled):
+    async def set_enabled(self, enabled: bool) -> None:
         await self.__send_single_request(FunctionID.SET_ENABLED, bool(enabled))
 
-    async def is_enabled(self):
+    async def is_enabled(self) -> bool:
         return await self.get_by_function_id(FunctionID.GET_ENABLED)
 
     async def __set_kx(self, function_id, kx):
@@ -367,7 +370,7 @@ class PidController:  # pylint: disable=too-many-public-methods
         else:
             raise FunctionNotImplementedError(f"{FunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0")
 
-    async def set_input(self, value, return_output=False):
+    async def set_input(self, value: int, return_output: bool = False) -> None:
         """
         Set the input, which is fed to the PID controller. The value is in Q16.16 format
         Returns The new outpout
@@ -416,46 +419,47 @@ class PidController:  # pylint: disable=too-many-public-methods
         """
         return await self.get_by_function_id(FunctionID.GET_CALIBRATION_OFFSET)
 
-    async def set_fallback_update_interval(self, value):
+    async def set_fallback_update_interval(self, value: int):
         """
         Set the update interval, when running in fallback mode. This value should be same as, when
         not running in fallback mode, to keep the PID constants the same. The value is
         an integer in ms
         """
+        assert value > 0
         try:
             await self.__send_single_request(FunctionID.SET_FALLBACK_UPDATE_INTERVAL, int(value))
         except InvalidFormatError:
             raise ValueError("Invalid calibration offset") from None
 
-    async def get_fallback_update_interval(self):
+    async def get_fallback_update_interval(self) -> int:
         """
         Returns The update interval, which is used when running in fallback mode. The
         return value is in units of K
         """
         return await self.get_by_function_id(FunctionID.GET_FALLBACK_UPDATE_INTERVAL)
 
-    async def reset(self):
+    async def reset(self) -> None:
         """
         Resets the device. This will trigger a hardware reset
         """
         await self.__send_single_request(FunctionID.RESET)
 
-    async def reset_settings(self):
+    async def reset_settings(self) -> None:
         """
         Resets the device to default values.
         """
         await self.__send_single_request(FunctionID.RESET_SETTINGS)
 
-    async def set_serial(self, serial):
+    async def set_serial(self, serial: int) -> None:
         try:
             await self.__send_single_request(FunctionID.SET_SERIAL_NUMBER, int(serial))
         except InvalidFormatError:
             raise ValueError("Invalid serial number") from None
 
-    async def get_active_connection_count(self):
+    async def get_active_connection_count(self) -> int:
         return await self.get_by_function_id(FunctionID.GET_ACTIVE_CONNECTION_COUNT)
 
-    async def get_by_function_id(self, function_id):
+    async def get_by_function_id(self, function_id: FunctionID) -> None:
         try:
             function_id = FunctionID(function_id)
         except ValueError:

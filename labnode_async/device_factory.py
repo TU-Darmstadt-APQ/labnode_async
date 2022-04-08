@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# Copyright (C) 2020  Patrick Baus
+# Copyright (C) 2022  Patrick Baus
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 """
 The device factory which allows to create instances of Labnodes from their device id
 """
+from typing import Any
+
+from .devices import DeviceIdentifier
+from .labnode import Labnode
 from .pid_controller import PidController
 
 
@@ -28,10 +32,10 @@ class DeviceFactory:
     A senor host factory to select the correct driver for given database
     config.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.__available_devices = {}
 
-    def register(self, device):
+    def register(self, device: Labnode) -> None:
         """
         Register a driver with the factory. Should only be called in this file.
 
@@ -44,7 +48,7 @@ class DeviceFactory:
         """
         self.__available_devices[device.DEVICE_IDENTIFIER] = device
 
-    def get(self, device_id, connection, *args, **kwargs):
+    def get(self, device_id: DeviceIdentifier, connection: 'IPConnection', *args: Any, **kwargs: Any) -> Labnode:
         """
         Look up the driver for a given database entry. Raises a `ValueError` if
         the driver is not registered.

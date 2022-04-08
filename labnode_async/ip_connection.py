@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# Copyright (C) 2020  Patrick Baus
+# Copyright (C) 2022  Patrick Baus
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 import asyncio
 import errno
 import logging
+from typing import Any, Optional
 
 # All messages are COBS encoded, while the data is serialized using the CBOR protocol
 from cobs import cobs
@@ -27,6 +28,7 @@ import cbor2 as cbor
 
 from .devices import FunctionID, DeviceIdentifier
 from .device_factory import device_factory
+from .labnode import Labnode
 
 class NotConnectedError(ConnectionError):
     """
@@ -38,38 +40,38 @@ class IPConnection:
     SEPARATOR = b'\x00'
 
     @property
-    def timeout(self):
+    def timeout(self) -> float:
         """
         Returns the timeout for async operations in seconds
         """
         return self.__timeout
 
     @timeout.setter
-    def timeout(self, value):
+    def timeout(self, value: float) -> None:
         self.__timeout = None if value is None else abs(float(value))
 
     @property
-    def is_connected(self):
+    def is_connected(self) -> bool:
         """
         Returns *True* if, the connection is established.
         """
         return self.__writer is not None and not self.__writer.is_closing()
 
     @property
-    def hostname(self):
+    def hostname(self) -> str:
         """
         Returns The hostname of the connection
         """
         return self.__host
 
     @property
-    def port(self):
+    def port(self) -> int:
         """
         Returns The port used by the connection
         """
         return self.__port
 
-    def __init__(self, host=None, port=4223, timeout=2.5):
+    def __init__(self, host: Optional[str] = None, port: int = 4223, timeout: float = 2.5) -> None:
         """
         Parameters
         ----------
@@ -92,21 +94,21 @@ class IPConnection:
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.WARNING)     # Only log really important messages
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Labnode:
         await self.connect()
         return await self._get_device()
 
-    async def __aexit__(self, exc_type, exc, traceback):
+    async def __aexit__(self, exc_type, exc, traceback) -> None:
         await self.disconnect()
 
-    def __encode_data(self, data):
+    def __encode_data(self, data: str) -> bytearray:
         return bytearray(cobs.encode(data) + self.SEPARATOR)
 
     @staticmethod
     def __decode_data(data):
         return cobs.decode(data[:-1])  # Strip the separator
 
-    async def get_device_id(self):
+    async def get_device_id(self) -> DeviceIdentifier:
         self.__logger.debug('Getting device type')
         result = await self.send_request(
             data={
@@ -121,11 +123,11 @@ class IPConnection:
             self.__logger.error("Got invalid reply for device id request: %s", result)
             raise
 
-    async def _get_device(self):
+    async def _get_device(self) -> Labnode:
         device_id, api_version = await self.get_device_id()
         return device_factory.get(device_id, self, api_version=api_version)
 
-    async def send_request(self, data, response_expected=False):
+    async def send_request(self, data: dict, response_expected: bool = False) -> Any:
         if not self.is_connected:
             raise NotConnectedError("Labnode IP connection not connected.")
         # If we are waiting for a response, send the request, then pass on the response as a future
@@ -158,7 +160,7 @@ class IPConnection:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
 
-    async def __read_packets(self):
+    async def __read_packets(self) -> dict:
         while 'loop not cancelled':
             try:
                 # We need to lock the stream reader, because only one coroutine is allowed to read
@@ -174,7 +176,7 @@ class IPConnection:
                 yield data
             except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection
-                self.__logger.error(f"Labnode IP connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
+                self.__logger.error("Labnode IP connection: The remote endpoint '%s:%i' closed the connection.", self.__host, self.__port)
                 break   # terminate the conenction
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
@@ -185,7 +187,7 @@ class IPConnection:
                 self.__logger.exception('Error while reading packet.')
                 await asyncio.sleep(0.1)
 
-    async def __process_packet(self, data):
+    async def __process_packet(self, data: dict) -> None:
         try:
             request_id = data.get(FunctionID.REQUEST_ID)
         except AttributeError:
@@ -201,7 +203,7 @@ class IPConnection:
                 # Drop the packet, because it is not our sequence number
                 pass
 
-    async def main_loop(self):
+    async def main_loop(self) -> None:
         self.__logger.info('Labnode IP connection established to host %(host)s', {'host': self.__host})
         try:
             async for packet in self.__read_packets():
@@ -210,7 +212,7 @@ class IPConnection:
         finally:
             await self.__close_transport()
 
-    async def connect(self, host=None, port=None):
+    async def connect(self, host: Optional[str] = None, port: Optional[int] = None) -> None:
         # We need to lock the connect() call, because we
         self.__read_lock = asyncio.Lock() if self.__read_lock is None else self.__read_lock
         async with self.__read_lock:
@@ -236,7 +238,7 @@ class IPConnection:
             )
             self.__running_tasks.append(asyncio.create_task(self.main_loop()))
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
         if not self.is_connected:
             return
         # This will cancel the main task, which will shut down the transport via __close_transport()
@@ -249,7 +251,7 @@ class IPConnection:
         finally:
             self.__read_lock = None
 
-    async def __close_transport(self):
+    async def __close_transport(self) -> None:
         # Flush data
         try:
             self.__writer.write_eof()
