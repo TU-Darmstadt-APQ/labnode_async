@@ -20,7 +20,7 @@
 import asyncio
 import errno
 import logging
-from typing import Generator, Optional
+from typing import AsyncIterator, Optional
 
 # All messages are COBS encoded, while the data is serialized using the CBOR protocol
 from cobs import cobs
@@ -164,7 +164,7 @@ class IPConnection:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
 
-    async def __read_packets(self) -> Generator[dict]:
+    async def __read_packets(self) -> AsyncIterator[dict]:
         while 'loop not cancelled':
             try:
                 # We need to lock the stream reader, because only one coroutine is allowed to read
@@ -180,7 +180,10 @@ class IPConnection:
                 yield data
             except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection
-                self.__logger.error("Labnode IP connection: The remote endpoint '%s:%i' closed the connection.", *self.__host)
+                self.__logger.error(
+                    "Labnode IP connection: The remote endpoint '%s:%i' closed the connection.",
+                    *self.__host
+                )
                 break   # terminate the connection
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR

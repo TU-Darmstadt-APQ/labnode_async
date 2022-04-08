@@ -17,13 +17,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+from __future__ import annotations
 from enum import Enum, unique
 import logging
 import warnings
-from typing import Any, Optional
+from typing import Any, Optional, Union, TYPE_CHECKING
+if TYPE_CHECKING:
+    from labnode_async import IPConnection
 
 from .devices import DeviceIdentifier, ErrorCode, FunctionID
-from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, InvalidReplyError, NotInitializedError
+from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, \
+    InvalidReplyError, NotInitializedError
 from .labnode import Labnode
 
 
@@ -37,13 +41,18 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     """
     A simple remote PID controller
     """
-    DEVICE_IDENTIFIER = DeviceIdentifier.PID
+    __DEVICE_IDENTIFIER = DeviceIdentifier.PID
+
+    @classmethod
+    @property
+    def device_identifier(cls) -> DeviceIdentifier:
+        return cls.__DEVICE_IDENTIFIER
 
     RAW_TO_UNIT = {
         FunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
-    def __init__(self, connection: 'IPConnection', api_version: tuple[int, int, int]) -> None:
+    def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
         super().__init__(connection, api_version)
         self.__logger = logging.getLogger(__name__)
 
@@ -158,10 +167,11 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         return await self.get_by_function_id(FunctionID.GET_MAC_ADDRESS)
 
-    async def set_mac_address(self, mac: bytearray) -> None:
+    async def set_mac_address(self, mac: Union[tuple[int, int, int, int, int, int], list[int], bytearray]) -> None:
         """
         Set the MAC address used by the ethernet port
         """
+        assert len(mac) == 6
         await self.__send_single_request(FunctionID.SET_MAC_ADDRESS, mac)
 
     async def get_auto_resume(self) -> bool:
@@ -255,7 +265,8 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        if self.api_version < (0, 11, 0) and function_id in (FunctionID.SET_SECONDARY_KP, FunctionID.SET_SECONDARY_KI, FunctionID.SET_SECONDARY_KD):
+        if self.api_version < (0, 11, 0) and function_id in \
+                (FunctionID.SET_SECONDARY_KP, FunctionID.SET_SECONDARY_KI, FunctionID.SET_SECONDARY_KD):
             raise FunctionNotImplementedError(f"{function_id.name} is only supported in api version >= 0.11.0")
         try:
             await self.__send_single_request(function_id, int(kx))

@@ -17,10 +17,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+from __future__ import annotations
 from abc import ABC, abstractmethod
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from labnode_async import IPConnection
+
+from labnode_async.devices import DeviceIdentifier
 
 
 class Labnode(ABC):
+
+    @property
+    @abstractmethod
+    def device_identifier(self) -> DeviceIdentifier:
+        pass
+
     @property
     def api_version(self) -> tuple[int, int, int]:
         """
@@ -29,13 +42,13 @@ class Labnode(ABC):
         return self.__api_version
 
     @property
-    def connection(self) -> 'IPConnection':
+    def connection(self) -> IPConnection:
         """
         Returns The ip connection used by the device
         """
         return self.__connection
 
-    def __init__(self, connection: 'IPConnection', api_version: tuple[int, int, int]) -> None:
+    def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
         self.__api_version = api_version
         self.__connection = connection
 
