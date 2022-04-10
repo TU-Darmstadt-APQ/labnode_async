@@ -18,6 +18,8 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 from __future__ import annotations
+
+from decimal import Decimal
 from enum import Enum, unique
 import logging
 import warnings
@@ -57,12 +59,29 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         return cls.__DEVICE_IDENTIFIER
 
     RAW_TO_UNIT = {
-        PidFunctionID.GET_BOARD_TEMPERATURE: lambda x: x + 273.15,
+        # The datasheet is *wrong* about the conversion formula. Slightly wrong
+        # but wrong non the less. They are "off by 1" with the conversion of the
+        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
+        # Return Kelvin
+        PidFunctionID.GET_BOARD_TEMPERATURE: lambda x: Decimal("175.72") * x / (2**16 - 1) + Decimal("226.3"),
+        # We need to truncate to 100 %rH according to the datasheet
+        # The datasheet is *wrong* about the conversion formula. Slightly wrong
+        # but wrong non the less. They are "off by 1" with the conversion of the
+        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
+        # Return %rH (above liquid water water), rH values below 0°C need to be compensated.
+        PidFunctionID.GET_HUMIDITY: lambda x: max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0),
+        PidFunctionID.GET_MAC_ADDRESS: bytearray,
+    }
+
+    RAW_TO_UNIT_11 = {
+        PidFunctionID.GET_BOARD_TEMPERATURE: lambda x: Decimal(x).quantize(Decimal("1.00")) + Decimal("273.15"),
+        PidFunctionID.GET_HUMIDITY: lambda x: Decimal(x).quantize(Decimal("1.00")),
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
     def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
         super().__init__(connection, api_version)
+        self.__RAW_TO_UNIT = PidController.RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController.RAW_TO_UNIT
         self.__logger = logging.getLogger(__name__)
 
     @staticmethod
@@ -503,7 +522,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
         result = await self.__send_single_request(function_id)
 
-        if function_id in PidController.RAW_TO_UNIT:
-            result = PidController.RAW_TO_UNIT[function_id](result)
+        if function_id in self.__RAW_TO_UNIT:
+            result = self.__RAW_TO_UNIT[function_id](result)
 
         return result
