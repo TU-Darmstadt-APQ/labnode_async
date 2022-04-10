@@ -362,8 +362,8 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert config_id in (0, 1)
         if config_id == 0:
             await self.__set_kx(PidFunctionID.SET_KI, ki)
-
-        await self.__set_kx(PidFunctionID.SET_SECONDARY_KI, ki)
+        else:
+            await self.__set_kx(PidFunctionID.SET_SECONDARY_KI, ki)
 
     async def get_ki(self, config_id: int = 0) -> int:
         """
