@@ -60,17 +60,18 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         return cls.__DEVICE_IDENTIFIER
 
     RAW_TO_UNIT = {
-        # The datasheet is *wrong* about the conversion formula. Slightly wrong
-        # but wrong non the less. They are "off by 1" with the conversion of the
-        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
+        # We need to truncate to 100 %rH according to the datasheet.
+        # The datasheet is *wrong* about the conversion formula. Slightly wrong, but wrong nonetheless.
+        # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
+        # (2**16 - 1). Most likely this was done for performance reason and acceptable.
         # Return Kelvin
         PidFunctionID.GET_BOARD_TEMPERATURE:
             lambda x: (Decimal("175.72") * x / (2**16 - 1) + Decimal("226.3")).quantize(Decimal("1.00")),
-        # We need to truncate to 100 %rH according to the datasheet
-        # The datasheet is *wrong* about the conversion formula. Slightly wrong
-        # but wrong non the less. They are "off by 1" with the conversion of the
-        # 16 bit result. They divide by 2**16 but should divide by (2**16 - 1)
-        # Return %rH (above liquid water water), rH values below 0°C need to be compensated.
+        # We need to truncate to 100 %rH according to the datasheet.
+        # The datasheet is *wrong* about the conversion formula. Slightly wrong, but wrong nonetheless.
+        # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
+        # (2**16 - 1). Most likely this was done for performance reason and acceptable.
+        # Return %rH (above liquid water), rH values below 0°C need to be compensated.
         PidFunctionID.GET_HUMIDITY:
             lambda x: (max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)).quantize(Decimal("1.00")),
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
@@ -226,7 +227,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         Returns The MAC address used by the ethernet port
         """
         if self.api_version < (0, 12, 0):
-            raise FunctionNotImplementedError(f"{PidFunctionID.GET_UUID.name} is only supported in api version >= 0.12.0")
+            raise FunctionNotImplementedError(
+                f"{PidFunctionID.GET_UUID.name} is only supported in api version >= 0.12.0"
+            )
         result = await self.get_by_function_id(PidFunctionID.GET_UUID)
         return UUID(bytes=bytes(result))
 
@@ -235,7 +238,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         Set the MAC address used by the ethernet port
         """
         if self.api_version < (0, 12, 0):
-            raise FunctionNotImplementedError(f"{PidFunctionID.SET_UUID.name} is only supported in api version >= 0.12.0")
+            raise FunctionNotImplementedError(
+                f"{PidFunctionID.SET_UUID.name} is only supported in api version >= 0.12.0"
+            )
         await self.__send_single_request(PidFunctionID.SET_UUID, tuple(uuid.bytes))
 
     async def get_auto_resume(self) -> bool:

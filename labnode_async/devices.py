@@ -37,6 +37,7 @@ class FunctionID(IntEnum):
 
     INVALID_FORMAT = 251
 
+
 # We use IntEnum, because those can be easily serialized using the standard CBOR converter
 @unique
 class PidFunctionID(IntEnum):
