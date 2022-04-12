@@ -217,6 +217,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         Set the MAC address used by the ethernet port
         """
         assert len(mac) == 6
+        mac = tuple(mac)  # convert bytearray if it is one
         await self.__send_single_request(PidFunctionID.SET_MAC_ADDRESS, mac)
 
     async def get_auto_resume(self) -> bool:
