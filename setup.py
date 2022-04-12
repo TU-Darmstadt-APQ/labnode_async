@@ -35,5 +35,5 @@ setup(
    license='GPL',
    license_files=('LICENSE',),
    packages=['labnode_async'],  # same as name
-   install_requires=['cobs', 'cbor2' ],  # external packages as dependencies
+   install_requires=['cobs', 'cbor2', 'pyserial-asyncio'],  # external packages as dependencies
 )
