@@ -24,6 +24,7 @@ from enum import Enum, unique
 import logging
 import warnings
 from typing import Any, Optional, Union, TYPE_CHECKING
+from uuid import UUID
 
 from .devices import DeviceIdentifier, ErrorCode, PidFunctionID
 from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, \
@@ -219,6 +220,23 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         assert len(mac) == 6
         mac = tuple(mac)  # convert bytearray if it is one
         await self.__send_single_request(PidFunctionID.SET_MAC_ADDRESS, mac)
+
+    async def get_uuid(self) -> UUID:
+        """
+        Returns The MAC address used by the ethernet port
+        """
+        if self.api_version < (0, 12, 0):
+            raise FunctionNotImplementedError(f"{PidFunctionID.GET_UUID.name} is only supported in api version >= 0.12.0")
+        result = await self.get_by_function_id(PidFunctionID.GET_UUID)
+        return UUID(bytes=bytes(result))
+
+    async def set_uuid(self, uuid: UUID) -> None:
+        """
+        Set the MAC address used by the ethernet port
+        """
+        if self.api_version < (0, 12, 0):
+            raise FunctionNotImplementedError(f"{PidFunctionID.SET_UUID.name} is only supported in api version >= 0.12.0")
+        await self.__send_single_request(PidFunctionID.SET_UUID, tuple(uuid.bytes))
 
     async def get_auto_resume(self) -> bool:
         """
