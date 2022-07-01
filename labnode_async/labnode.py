@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # Copyright (C) 2022  Patrick Baus
@@ -24,7 +23,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 if TYPE_CHECKING:
-    from labnode_async import IPConnection
+    from labnode_async.connection import Connection
     from labnode_async.devices import DeviceIdentifier
 
 
@@ -55,16 +54,16 @@ class Labnode(ABC):
         return self.__api_version
 
     @property
-    def connection(self) -> IPConnection:
+    def connection(self) -> Connection:
         """
         Returns
         -------
-        IPConnection
-            The ip connection used by the device
+        Connection
+            The ip or serial connection used by the device
         """
         return self.__connection
 
-    def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
+    def __init__(self, connection: Connection, api_version: tuple[int, int, int]) -> None:
         self.__api_version = api_version
         self.__connection = connection
 

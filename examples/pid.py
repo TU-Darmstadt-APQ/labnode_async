@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # Copyright (C) 2020  Patrick Baus
@@ -28,7 +27,7 @@ from labnode_async.devices import DeviceIdentifier
 
 async def main():
     try:
-        ipcon = IPConnection(host='127.0.0.1', port=4223)
+        ipcon = IPConnection(hostname='127.0.0.1', port=4223)
         async with ipcon as pid_controller:
             # Test setters
             #await pid_controller.set_serial(1)

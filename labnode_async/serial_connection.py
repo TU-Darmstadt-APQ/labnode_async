@@ -98,6 +98,9 @@ class SerialConnection(Connection):
     ) -> None:
         await self.disconnect()
 
+    def __str__(self) -> str:
+        return f"SerialConnection({self.endpoint})"
+
     async def send_request(self, data: dict, response_expected: bool = False) -> Optional[dict]:
         if not self.is_connected:
             raise NotConnectedError("Labnode serial connection not connected.")

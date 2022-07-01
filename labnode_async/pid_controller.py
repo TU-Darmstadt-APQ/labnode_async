@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # Copyright (C) 2022  Patrick Baus
@@ -87,6 +86,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         super().__init__(connection, api_version)
         self.__RAW_TO_UNIT = PidController.RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController.RAW_TO_UNIT
         self.__logger = logging.getLogger(__name__)
+
+    def __str__(self):
+        return f"Labnode at {self.connection}"
 
     @staticmethod
     def __test_for_errors(result: dict, key: int) -> None:
