@@ -84,7 +84,7 @@ class Connection:
         self.__pending_requests = {}
 
         self.__logger = logging.getLogger(__name__)
-        self.__logger.setLevel(logging.WARNING)     # Only log really important messages
+        self.__logger.setLevel(logging.ERROR)     # Only log really important messages
 
     def __encode_data(self, data: str) -> bytearray:
         return bytearray(cobs.encode(data) + self._SEPARATOR)
@@ -184,6 +184,7 @@ class Connection:
             except cobs.DecodeError as exp:
                 # raised by `self.__decode_data()`
                 self.__logger.error("Cobs decode error: %s, Data was '%s'", exp, data.hex())
+                await asyncio.sleep(0.01)
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
                 self.__logger.exception('Error while reading packet.')

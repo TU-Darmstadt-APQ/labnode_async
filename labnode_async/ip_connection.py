@@ -58,8 +58,8 @@ class IPConnection(Connection):
         """
         super().__init__(timeout)
         self.__host = host, port
-
         self.__logger = logging.getLogger(__name__)
+        self.__logger.setLevel(logging.ERROR)  # Only log really important messages
 
     async def __aenter__(self) -> Labnode:
         await self.connect()
