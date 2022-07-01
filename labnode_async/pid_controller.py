@@ -224,7 +224,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_uuid(self) -> UUID:
         """
-        Returns The MAC address used by the ethernet port
+        Returns The universally unique identifier of the node
         """
         if self.api_version < (0, 12, 0):
             raise FunctionNotImplementedError(
@@ -235,7 +235,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_uuid(self, uuid: UUID) -> None:
         """
-        Set the MAC address used by the ethernet port
+        Set the universally unique identifier of the node
         """
         if self.api_version < (0, 12, 0):
             raise FunctionNotImplementedError(

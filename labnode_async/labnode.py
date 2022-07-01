@@ -21,6 +21,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from typing import TYPE_CHECKING
+from uuid import UUID
+
 if TYPE_CHECKING:
     from labnode_async import IPConnection
     from labnode_async.devices import DeviceIdentifier
@@ -91,4 +93,23 @@ class Labnode(ABC):
         -------
         int
             The serial number of the device
+        """
+
+    @abstractmethod
+    async def get_uuid(self) -> UUID:
+        """
+        Returns
+        -------
+        UUID
+            The universally unique identifier of the node
+        """
+
+    async def set_uuid(self, uuid: UUID) -> None:
+        """
+        Set the universally unique identifier of the node
+
+        Parameters
+        ----------
+        uuid: UUID
+            The universally unique identifier of the node
         """
