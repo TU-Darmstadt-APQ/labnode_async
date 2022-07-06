@@ -43,6 +43,11 @@ class TtyOptions:
 
 
 class SerialConnection(Connection):
+    """
+    The serial connection is one of the two types of connections supported by the labnodes. See the`IPConnection` for
+    the other option.
+    """
+
     @property
     def tty(self) -> str:
         """
@@ -107,9 +112,11 @@ class SerialConnection(Connection):
         return f"SerialConnection({self.endpoint})"
 
     async def send_request(self, data: dict, response_expected: bool = False) -> dict | None:
-        if not self.is_connected:
-            raise NotConnectedError("Labnode serial connection not connected.")
-        return await super().send_request(data, response_expected)
+        try:
+            return await super().send_request(data, response_expected)
+        except NotConnectedError:
+            # reraise with different message
+            raise NotConnectedError("Labnode serial connection not connected.") from None
 
     async def connect(self) -> None:
         self._read_lock = asyncio.Lock() if self._read_lock is None else self._read_lock

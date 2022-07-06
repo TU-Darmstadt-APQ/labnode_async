@@ -130,7 +130,10 @@ class Connection:
         self.__running_tasks.add(asyncio.create_task(self.main_loop()))
 
     async def send_request(self, data: dict, response_expected: bool = False) -> dict[FunctionID, Any] | None:
-        # Check for `is_connected` before calling this function
+        if not self.is_connected:
+            raise NotConnectedError("Not connected")
+        assert self.__writer is not None  # already done in self.is_connected
+
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id = await self.__request_id_queue.get()
         try:

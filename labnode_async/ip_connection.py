@@ -28,6 +28,11 @@ from .labnode import Labnode
 
 
 class IPConnection(Connection):
+    """
+    The ip connection is one of the two types of connections supported by the labnodes. See the`SerialConnection` for
+    the other option.
+    """
+
     @property
     def hostname(self) -> str:
         """
@@ -75,10 +80,11 @@ class IPConnection(Connection):
         return f"IPConnection({self.hostname}:{self.port})"
 
     async def send_request(self, data: dict, response_expected: bool = False) -> dict | None:
-        if not self.is_connected:
-            raise NotConnectedError("Labnode IP connection not connected.")
-        # If we are waiting for a response, send the request, then pass on the response as a future
-        return await super().send_request(data, response_expected)
+        try:
+            return await super().send_request(data, response_expected)
+        except NotConnectedError:
+            # reraise with different message
+            raise NotConnectedError("Labnode serial connection not connected.") from None
 
     async def connect(self) -> None:
         # We need to lock the `connect()` call, because we

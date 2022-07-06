@@ -340,7 +340,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     async def is_enabled(self) -> bool:
         return await self.get_by_function_id(PidFunctionID.GET_ENABLED)
 
-    async def __set_kx(self, function_id: PidFunctionID, kx: int) -> None:  # pylint: disable: invalid-name
+    async def __set_kx(self, function_id: PidFunctionID, kx: int) -> None:  # pylint: disable=invalid-name
         """
         Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""The abstract base class for all labnodes"""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
