@@ -17,16 +17,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+from __future__ import annotations
+
 import asyncio
 import logging
+from dataclasses import asdict, dataclass
 from types import TracebackType
-from typing import Optional, Type, Union
+from typing import Type
 
 import serial_asyncio
 
 from labnode_async.labnode import Labnode
 
 from .connection import Connection, NotConnectedError
+
+
+@dataclass
+class TtyOptions:
+    baudrate: int
+    bytesize: int
+    parity: str
+    stopbits: int
+    xonxoff: bool
+    rtscts: bool
 
 
 class SerialConnection(Connection):
@@ -42,7 +55,7 @@ class SerialConnection(Connection):
         """
         Returns The port used by the connection
         """
-        return self.__tty_options["baudrate"]
+        return self.__tty_options.baudrate
 
     @property
     def endpoint(self) -> str:
@@ -56,13 +69,13 @@ class SerialConnection(Connection):
 
     def __init__(
         self,
-        tty: Optional[Union[str, int]] = None,
+        tty: str,
         baudrate: int = 115200,
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        xonxoff: int = 0,
-        rtscts: int = 0,
+        xonxoff: bool = False,
+        rtscts: bool = False,
         timeout: float = 2.5,
     ) -> None:
         """
@@ -77,14 +90,7 @@ class SerialConnection(Connection):
         """
         super().__init__(timeout)
         self.__tty = tty
-        self.__tty_options = {
-            "baudrate": baudrate,
-            "bytesize": bytesize,
-            "parity": parity,
-            "stopbits": stopbits,
-            "xonxoff": xonxoff,
-            "rtscts": rtscts,
-        }
+        self.__tty_options: TtyOptions = TtyOptions(baudrate, bytesize, parity, stopbits, xonxoff, rtscts)
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.ERROR)  # Only log really important messages
 
@@ -93,49 +99,26 @@ class SerialConnection(Connection):
         return await self._get_device()
 
     async def __aexit__(
-        self, exc_type: Optional[Type[BaseException]], exc: Optional[BaseException], traceback: Optional[TracebackType]
+        self, exc_type: Type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None
     ) -> None:
         await self.disconnect()
 
     def __str__(self) -> str:
         return f"SerialConnection({self.endpoint})"
 
-    async def send_request(self, data: dict, response_expected: bool = False) -> Optional[dict]:
+    async def send_request(self, data: dict, response_expected: bool = False) -> dict | None:
         if not self.is_connected:
             raise NotConnectedError("Labnode serial connection not connected.")
         return await super().send_request(data, response_expected)
 
-    async def connect(
-        self,
-        tty: Optional[Union[str, int]] = None,
-        baudrate: Optional[int] = None,
-        bytesize: Optional[int] = None,
-        parity: Optional[str] = None,
-        stopbits: Optional[int] = None,
-        xonxoff: Optional[int] = None,
-        rtscts: Optional[int] = None,
-    ) -> None:
+    async def connect(self) -> None:
         self._read_lock = asyncio.Lock() if self._read_lock is None else self._read_lock
         async with self._read_lock:
             if self.is_connected:
                 return
 
-            self.__tty = self.__tty if tty is None else tty
-            if baudrate is not None:
-                self.__tty_options["baudrate"] = baudrate
-            if bytesize is not None:
-                self.__tty_options["bytesize"] = bytesize
-            if parity is not None:
-                self.__tty_options["parity"] = parity
-            if stopbits is not None:
-                self.__tty_options["stopbits"] = stopbits
-            if xonxoff is not None:
-                self.__tty_options["xonxoff"] = xonxoff
-            if rtscts is not None:
-                self.__tty_options["rtscts"] = rtscts
-
             reader, writer = await serial_asyncio.open_serial_connection(
-                url=self.__tty, timeout=self.timeout, write_timeout=self.timeout, **self.__tty_options
+                url=self.__tty, timeout=self.timeout, write_timeout=self.timeout, **asdict(self.__tty_options)
             )
             self.__logger.info("Labnode serial connection established to port '%s'", self.__tty)
-            await super().connect(reader, writer)
+            await super()._connect(reader, writer)

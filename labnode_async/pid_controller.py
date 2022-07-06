@@ -79,9 +79,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
         # (2**16 - 1). Most likely this was done for performance reason and acceptable.
         # Return %rH (above liquid water), rH values below 0°C need to be compensated.
-        PidFunctionID.GET_HUMIDITY: lambda x: (max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)).quantize(
-            Decimal("1.00")
-        ),
+        PidFunctionID.GET_HUMIDITY: lambda x: (
+            max(min(125 * Decimal(x) / Decimal(2**16 - 1) - 6, Decimal(100)), Decimal(0))
+        ).quantize(Decimal("1.00")),
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
@@ -340,7 +340,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     async def is_enabled(self) -> bool:
         return await self.get_by_function_id(PidFunctionID.GET_ENABLED)
 
-    async def __set_kx(self, function_id: PidFunctionID, kx: int) -> None:
+    async def __set_kx(self, function_id: PidFunctionID, kx: int) -> None:  # pylint: disable: invalid-name
         """
         Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """

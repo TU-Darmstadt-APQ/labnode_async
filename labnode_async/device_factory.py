@@ -29,7 +29,7 @@ from .labnode import Labnode
 from .pid_controller import PidController
 
 if TYPE_CHECKING:
-    from .ip_connection import IPConnection
+    from .connection import Connection
 
 
 class DeviceFactory:
@@ -39,7 +39,7 @@ class DeviceFactory:
     """
 
     def __init__(self) -> None:
-        self.__available_devices = {}
+        self.__available_devices: dict[DeviceIdentifier, Type[Labnode]] = {}
 
     def register(self, device: Type[Labnode]) -> None:
         """
@@ -52,7 +52,7 @@ class DeviceFactory:
         """
         self.__available_devices[device.device_identifier] = device
 
-    def get(self, device_id: DeviceIdentifier, connection: IPConnection, *args: Any, **kwargs: Any) -> Labnode:
+    def get(self, device_id: DeviceIdentifier, connection: Connection, *args: Any, **kwargs: Any) -> Labnode:
         """
         Look up the driver for a given database entry. Raises a `ValueError` if
         the driver is not registered.

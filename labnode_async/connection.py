@@ -16,11 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+from __future__ import annotations
+
 import asyncio
 import errno
 import logging
 from asyncio import StreamReader, StreamWriter
-from typing import AsyncIterator, Optional
+from typing import Any, AsyncIterator
 
 import cbor2 as cbor
 
@@ -76,12 +78,13 @@ class Connection:
         timeout: float
             the timeout in seconds used when making queries or connection attempts
         """
-        self.__running_tasks = []
-        self.__reader, self.__writer = None, None
-        self.__request_id_queue = None
+        self.__running_tasks: set[asyncio.Task] = set()
+        self.__reader: asyncio.StreamReader | None = None
+        self.__writer: asyncio.StreamWriter | None = None
+        self.__request_id_queue: asyncio.Queue[int] | None = None
         self.timeout = timeout
-        self._read_lock = None  # We need to lock the asyncio stream reader
-        self.__pending_requests = {}
+        self._read_lock: asyncio.Lock | None = None  # We need to lock the asyncio stream reader
+        self.__pending_requests: dict[int, asyncio.Future] = {}
 
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.ERROR)  # Only log really important messages
@@ -103,7 +106,9 @@ class Connection:
             response_expected=True,
         )
         try:
-            return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE]), tuple(result[FunctionID.GET_API_VERSION])
+            assert result is not None
+            api_version: tuple[int, int, int] = tuple(result[FunctionID.GET_API_VERSION])
+            return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE]), api_version
         except KeyError:
             self.__logger.error("Got invalid reply for device id request: %s", result)
             raise
@@ -112,7 +117,7 @@ class Connection:
         device_id, api_version = await self.get_device_id()
         return device_factory.get(device_id, self, api_version=api_version)
 
-    async def connect(self, reader: StreamReader, writer: StreamWriter) -> None:
+    async def _connect(self, reader: StreamReader, writer: StreamWriter) -> None:
         self.__reader, self.__writer = reader, writer
 
         # The maximum sequence number is a uint8_t. That means 255.
@@ -122,9 +127,9 @@ class Connection:
         for i in range(24):
             self.__request_id_queue.put_nowait(i)
 
-        self.__running_tasks.append(asyncio.create_task(self.main_loop()))
+        self.__running_tasks.add(asyncio.create_task(self.main_loop()))
 
-    async def send_request(self, data: dict, response_expected: bool = False) -> Optional[dict]:
+    async def send_request(self, data: dict, response_expected: bool = False) -> dict[FunctionID, Any] | None:
         # Check for `is_connected` before calling this function
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id = await self.__request_id_queue.get()
@@ -154,6 +159,7 @@ class Connection:
                 del response[FunctionID.REQUEST_ID]
                 return response
                 # TODO: Raise invalid command errors (252)
+            return None
         finally:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
@@ -161,8 +167,7 @@ class Connection:
     async def __read_packets(self) -> AsyncIterator[dict]:
         while "loop not cancelled":
             try:
-                # We need to lock the stream reader, because only one coroutine is allowed to read
-                # data
+                # We need to lock the stream reader, because only one coroutine is allowed to read data
                 async with self._read_lock:
                     data = await self.__reader.readuntil(self._SEPARATOR)
                 self.__logger.debug("Received COBS encoded data: %(data)s", {"data": data.hex()})
@@ -214,13 +219,15 @@ class Connection:
     async def disconnect(self) -> None:
         if not self.is_connected:
             return
-        # This will cancel the main task, which will shut down the transport via __close_transport()
-        [task.cancel() for task in self.__running_tasks]
+        # Cancel the main task, which will shut down the transport via __close_transport()
+        for task in self.__running_tasks:
+            task.cancel()
         try:
             await asyncio.gather(*self.__running_tasks)
         except asyncio.CancelledError:
             pass
         finally:
+            self.__running_tasks.clear()
             self._read_lock = None
 
     async def __close_transport(self) -> None:

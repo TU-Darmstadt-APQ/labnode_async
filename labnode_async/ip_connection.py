@@ -21,7 +21,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from types import TracebackType
-from typing import Type
+from typing import Tuple, Type
 
 from .connection import Connection, NotConnectedError
 from .labnode import Labnode
@@ -46,7 +46,7 @@ class IPConnection(Connection):
     def endpoint(self) -> str:
         return f"{self.hostname}:{self.port}"
 
-    def __init__(self, hostname: str | None = None, port: int = 4223, timeout: float = 2.5) -> None:
+    def __init__(self, hostname: str, port: int = 4223, timeout: float = 2.5) -> None:
         """
         Parameters
         ----------
@@ -58,7 +58,7 @@ class IPConnection(Connection):
             the timeout in seconds used when making queries or connection attempts
         """
         super().__init__(timeout)
-        self.__host = hostname, port
+        self.__host: Tuple[str, int] = hostname, port
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.ERROR)  # Only log really important messages
 
@@ -80,16 +80,14 @@ class IPConnection(Connection):
         # If we are waiting for a response, send the request, then pass on the response as a future
         return await super().send_request(data, response_expected)
 
-    async def connect(self, hostname: str | None = None, port: int | None = None) -> None:
+    async def connect(self) -> None:
         # We need to lock the `connect()` call, because we
         self._read_lock = asyncio.Lock() if self._read_lock is None else self._read_lock
         async with self._read_lock:
             if self.is_connected:
                 return
 
-            self.__host = self.__host[0] if hostname is None else hostname, self.__host[1] if port is None else port
-
             # wait_for() blocks until the request is done if timeout is None
             reader, writer = await asyncio.wait_for(asyncio.open_connection(*self.__host), self.timeout)
             self.__logger.info("Labnode IP connection established to host '%s:%i'", *self.__host)
-            await super().connect(reader, writer)
+            await super()._connect(reader, writer)
