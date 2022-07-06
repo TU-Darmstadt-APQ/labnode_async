@@ -17,8 +17,8 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 from __future__ import annotations
-from abc import ABC, abstractmethod
 
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 from uuid import UUID
 

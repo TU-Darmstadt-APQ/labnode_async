@@ -21,7 +21,8 @@
 The device factory which allows creating instances of Labnodes from their device id
 """
 from __future__ import annotations
-from typing import Any, Type, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any, Type
 
 from .devices import DeviceIdentifier
 from .labnode import Labnode
@@ -36,6 +37,7 @@ class DeviceFactory:
     A sensor host factory to select the correct driver for given database
     config.
     """
+
     def __init__(self) -> None:
         self.__available_devices = {}
 

@@ -50,7 +50,7 @@ class IPConnection(Connection):
         """
         Parameters
         ----------
-        host: str
+        hostname: str
             hostname of the connection
         port: int
             port of the connection
@@ -67,10 +67,7 @@ class IPConnection(Connection):
         return await self._get_device()
 
     async def __aexit__(
-            self,
-            exc_type: Type[BaseException] | None,
-            exc: BaseException | None,
-            traceback: TracebackType | None
+        self, exc_type: Type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None
     ) -> None:
         await self.disconnect()
 
@@ -93,9 +90,6 @@ class IPConnection(Connection):
             self.__host = self.__host[0] if hostname is None else hostname, self.__host[1] if port is None else port
 
             # wait_for() blocks until the request is done if timeout is None
-            reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(*self.__host),
-                self.timeout
-            )
+            reader, writer = await asyncio.wait_for(asyncio.open_connection(*self.__host), self.timeout)
             self.__logger.info("Labnode IP connection established to host '%s:%i'", *self.__host)
             await super().connect(reader, writer)

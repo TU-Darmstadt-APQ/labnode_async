@@ -18,16 +18,22 @@
 # ##### END GPL LICENSE BLOCK #####
 from __future__ import annotations
 
-from decimal import Decimal
-from enum import Enum, unique
 import logging
 import warnings
-from typing import Any, Optional, Union, TYPE_CHECKING
+from decimal import Decimal
+from enum import Enum, unique
+from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
 from .devices import DeviceIdentifier, ErrorCode, PidFunctionID
-from .errors import FunctionNotImplementedError, InvalidCommandError, InvalidFormatError, InvalidModeError, \
-    InvalidReplyError, NotInitializedError
+from .errors import (
+    FunctionNotImplementedError,
+    InvalidCommandError,
+    InvalidFormatError,
+    InvalidModeError,
+    InvalidReplyError,
+    NotInitializedError,
+)
 from .labnode import Labnode
 
 if TYPE_CHECKING:
@@ -44,6 +50,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     """
     A Labnode PID controller. This is the API to configure and control the Labnode.
     """
+
     __DEVICE_IDENTIFIER = DeviceIdentifier.PID
 
     @classmethod
@@ -64,15 +71,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
         # (2**16 - 1). Most likely this was done for performance reason and acceptable.
         # Return Kelvin
-        PidFunctionID.GET_BOARD_TEMPERATURE:
-            lambda x: (Decimal("175.72") * x / (2**16 - 1) + Decimal("226.3")).quantize(Decimal("1.00")),
+        PidFunctionID.GET_BOARD_TEMPERATURE: lambda x: (
+            Decimal("175.72") * x / (2**16 - 1) + Decimal("226.3")
+        ).quantize(Decimal("1.00")),
         # We need to truncate to 100 %rH according to the datasheet.
         # The datasheet is *wrong* about the conversion formula. Slightly wrong, but wrong nonetheless.
         # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
         # (2**16 - 1). Most likely this was done for performance reason and acceptable.
         # Return %rH (above liquid water), rH values below 0°C need to be compensated.
-        PidFunctionID.GET_HUMIDITY:
-            lambda x: (max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)).quantize(Decimal("1.00")),
+        PidFunctionID.GET_HUMIDITY: lambda x: (max(min(125 * Decimal(x) / (2**16 - 1) - 6, 100), 0)).quantize(
+            Decimal("1.00")
+        ),
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
@@ -139,7 +148,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def __send_single_request(self, key: int, value: Optional[Any] = None) -> Any:
         result = await self.send_multi_request(
-            data={key: value, }
+            data={
+                key: value,
+            }
         )
         self.__test_for_errors(result, key)
 
@@ -158,10 +169,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
                 data[-20] = data[PidFunctionID.GET_BOARD_TEMPERATURE]
                 del data[PidFunctionID.GET_BOARD_TEMPERATURE]
 
-        result = await self.connection.send_request(
-            data=data,
-            response_expected=True
-        )
+        result = await self.connection.send_request(data=data, response_expected=True)
 
         if self.api_version < (0, 11, 0):
             # We need to rewrite some function ids
@@ -176,7 +184,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             result = {PidFunctionID(key): value for key, value in result.items()}
         except ValueError:
             # Raised by PidFunctionID(key)
-            self.__logger.error("Received unknown function id in data: %(data)s", {'data': data})
+            self.__logger.error("Received unknown function id in data: %(data)s", {"data": data})
             return result
         return result
 
@@ -336,8 +344,11 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
         """
-        if self.api_version < (0, 11, 0) and function_id in \
-                (PidFunctionID.SET_SECONDARY_KP, PidFunctionID.SET_SECONDARY_KI, PidFunctionID.SET_SECONDARY_KD):
+        if self.api_version < (0, 11, 0) and function_id in (
+            PidFunctionID.SET_SECONDARY_KP,
+            PidFunctionID.SET_SECONDARY_KI,
+            PidFunctionID.SET_SECONDARY_KD,
+        ):
             raise FunctionNotImplementedError(f"{function_id.name} is only supported in api version >= 0.11.0")
         try:
             await self.__send_single_request(function_id, int(kx))
@@ -546,7 +557,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             function_id = PidFunctionID(function_id)
         except ValueError:
             raise InvalidCommandError(f"Command {function_id} is invalid.") from None
-        assert function_id.value < 0    # all getter have negative ids
+        assert function_id.value < 0  # all getter have negative ids
 
         result = await self.__send_single_request(function_id)
 

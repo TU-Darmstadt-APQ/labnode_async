@@ -24,6 +24,7 @@ class FunctionID(IntEnum):
     """
     These are the function calls supported by all Labnodes
     """
+
     REQUEST_ID = 0
     SET_SERIAL_NUMBER = 12
     RESET = 30
@@ -44,6 +45,7 @@ class PidFunctionID(IntEnum):
     """
     These are the function calls supported by the Labnode PID controllers
     """
+
     REQUEST_ID = 0
     SET_INPUT = 1
     SET_KP = 2
@@ -109,6 +111,7 @@ class ErrorCode(IntEnum):
     """
     Error codes raised by Labnodes
     """
+
     INVALID_PARAMETER_TYPE = 248
     ACK = 249
     INVALID_MODE = 250
@@ -123,4 +126,5 @@ class DeviceIdentifier(IntEnum):
     """
     The device codes used by all Labnodes to identify themselves
     """
+
     PID = 0

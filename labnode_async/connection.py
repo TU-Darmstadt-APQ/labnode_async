@@ -22,12 +22,13 @@ import logging
 from asyncio import StreamReader, StreamWriter
 from typing import AsyncIterator, Optional
 
-# All messages are COBS encoded, while the data is serialized using the CBOR protocol
-from cobs import cobs
 import cbor2 as cbor
 
-from .devices import FunctionID, DeviceIdentifier
+# All messages are COBS encoded, while the data is serialized using the CBOR protocol
+from cobs import cobs
+
 from .device_factory import device_factory
+from .devices import DeviceIdentifier, FunctionID
 from .labnode import Labnode
 
 
@@ -38,7 +39,7 @@ class NotConnectedError(ConnectionError):
 
 
 class Connection:
-    _SEPARATOR = b'\x00'
+    _SEPARATOR = b"\x00"
 
     @property
     def timeout(self) -> float:
@@ -83,7 +84,7 @@ class Connection:
         self.__pending_requests = {}
 
         self.__logger = logging.getLogger(__name__)
-        self.__logger.setLevel(logging.ERROR)     # Only log really important messages
+        self.__logger.setLevel(logging.ERROR)  # Only log really important messages
 
     def __encode_data(self, data: str) -> bytearray:
         return bytearray(cobs.encode(data) + self._SEPARATOR)
@@ -96,10 +97,10 @@ class Connection:
         self.__logger.debug("Getting device type")
         result = await self.send_request(
             data={
-              FunctionID.GET_DEVICE_TYPE: None,
-              FunctionID.GET_API_VERSION: None,
+                FunctionID.GET_DEVICE_TYPE: None,
+                FunctionID.GET_API_VERSION: None,
             },
-            response_expected=True
+            response_expected=True,
         )
         try:
             return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE]), tuple(result[FunctionID.GET_API_VERSION])
@@ -129,14 +130,12 @@ class Connection:
         request_id = await self.__request_id_queue.get()
         try:
             data[FunctionID.REQUEST_ID] = request_id
-            self.__logger.debug("Sending data: %(payload)s", {'payload': data})
-            request = self.__encode_data(
-                cbor.dumps(data)
-            )
-            self.__logger.debug('Sending request: %(payload)s', {'payload': request})
+            self.__logger.debug("Sending data: %(payload)s", {"payload": data})
+            request = self.__encode_data(cbor.dumps(data))
+            self.__logger.debug("Sending request: %(payload)s", {"payload": request})
             self.__writer.write(request)
             if response_expected:
-                self.__logger.debug('Waiting for reply for request number %(request_id)s.', {'request_id': request_id})
+                self.__logger.debug("Waiting for reply for request number %(request_id)s.", {"request_id": request_id})
                 # The future will be resolved by the main_loop() and __process_packet()
                 self.__pending_requests[request_id] = asyncio.Future()
                 try:
@@ -149,7 +148,7 @@ class Connection:
                     self.__pending_requests.pop(request_id, None)
                 self.__logger.debug(
                     "Got reply for request number %(request_id)s: %(response)s",
-                    {'request_id': request_id, 'response': response}
+                    {"request_id": request_id, "response": response},
                 )
                 # strip the request id, because we have added it, and the result should be transparent
                 del response[FunctionID.REQUEST_ID]
@@ -160,40 +159,39 @@ class Connection:
             self.__request_id_queue.put_nowait(request_id)
 
     async def __read_packets(self) -> AsyncIterator[dict]:
-        while 'loop not cancelled':
+        while "loop not cancelled":
             try:
                 # We need to lock the stream reader, because only one coroutine is allowed to read
                 # data
                 async with self._read_lock:
                     data = await self.__reader.readuntil(self._SEPARATOR)
-                self.__logger.debug("Received COBS encoded data: %(data)s", {'data': data.hex()})
+                self.__logger.debug("Received COBS encoded data: %(data)s", {"data": data.hex()})
                 data = self.__decode_data(data)
-                self.__logger.debug("Unpacked CBOR encoded data: %(data)s", {'data': data.hex()})
+                self.__logger.debug("Unpacked CBOR encoded data: %(data)s", {"data": data.hex()})
                 data = cbor.loads(data)
-                self.__logger.debug("Decoded received data: %(data)s", {'data': data})
+                self.__logger.debug("Decoded received data: %(data)s", {"data": data})
 
                 yield data
             except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection
                 self.__logger.error(
-                    "Labnode serial connection: The remote endpoint '%s' closed the connection.",
-                    self.endpoint
+                    "Labnode serial connection: The remote endpoint '%s' closed the connection.", self.endpoint
                 )
-                break   # terminate the connection
+                break  # terminate the connection
             except cobs.DecodeError as exp:
                 # raised by `self.__decode_data()`
                 self.__logger.error("Cobs decode error: %s, Data was '%s'", exp, data.hex())
                 await asyncio.sleep(0.01)
             except Exception:  # We parse undefined content from an external source pylint: disable=broad-except
                 # TODO: Add explicit error handling for CBOR
-                self.__logger.exception('Error while reading packet.')
+                self.__logger.exception("Error while reading packet.")
                 await asyncio.sleep(0.1)
 
     async def __process_packet(self, data: dict) -> None:
         try:
             request_id = data.get(FunctionID.REQUEST_ID)
         except AttributeError:
-            self.__logger.error("Received invalid data: %(data)s", {'data': data})
+            self.__logger.error("Received invalid data: %(data)s", {"data": data})
         else:
             try:
                 # Get the future and mark it as done
@@ -238,7 +236,7 @@ class Connection:
             pass
         except OSError as exc:
             if exc.errno == errno.ENOTCONN:
-                pass    # Socket is no longer connected, so we can't send the EOF.
+                pass  # Socket is no longer connected, so we can't send the EOF.
             else:
                 raise
         finally:
