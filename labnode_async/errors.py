@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # Copyright (C) 2021  Patrick Baus
@@ -17,29 +16,46 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""All Labnode protocol exceptions can be found here"""
+
+
 class LabnodeException(Exception):
-    pass
+    """
+    The base exception class for all errors thrown by labnode_async.
+    """
 
 
-class NotInitializedError(LabnodeException):
-    pass
+class PidNotInitializedError(LabnodeException):
+    """
+    Raised by the controller if the PID parameters have not been initialized, yet the controller was turned on
+    """
 
 
 class InvalidReplyError(LabnodeException):
-    pass
+    """
+    Raised if the Reply from the Labnode matched our request id, yet did not contain a reply to the request made.
+    """
 
 
 class InvalidModeError(LabnodeException):
-    pass
+    """
+    Raised if the labnode cannot execute the command, because it is not set to the right operating mode.
+    """
 
 
 class FunctionNotImplementedError(LabnodeException):
-    pass
+    """
+    Raised if the Labnode recognises the command, but the function is not supported in this firmware.
+    """
 
 
 class InvalidCommandError(LabnodeException):
-    pass
+    """
+    Raised if the Labnode does not recognise the command.
+    """
 
 
 class InvalidFormatError(LabnodeException):
-    pass
+    """
+    Raised if the request does not have the correct formatting. Typically, the wrong datatype.
+    """

@@ -16,15 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""The ip connection module for all Labnodes"""
 from __future__ import annotations
 
 import asyncio
 import logging
-from types import TracebackType
-from typing import Tuple, Type
+from typing import Any, Tuple
 
 from .connection import Connection, NotConnectedError
-from .labnode import Labnode
+from .devices import FunctionID
 
 
 class IPConnection(Connection):
@@ -49,6 +49,7 @@ class IPConnection(Connection):
 
     @property
     def endpoint(self) -> str:
+        """A string representation of the connection properties"""
         return f"{self.hostname}:{self.port}"
 
     def __init__(self, hostname: str, port: int = 4223, timeout: float = 2.5) -> None:
@@ -67,28 +68,35 @@ class IPConnection(Connection):
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.ERROR)  # Only log really important messages
 
-    async def __aenter__(self) -> Labnode:
-        await self.connect()
-        return await self._get_device()
-
-    async def __aexit__(
-        self, exc_type: Type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None
-    ) -> None:
-        await self.disconnect()
-
     def __str__(self) -> str:
         return f"IPConnection({self.hostname}:{self.port})"
 
-    async def send_request(self, data: dict, response_expected: bool = False) -> dict | None:
+    async def send_request(
+        self, data: dict[FunctionID, Any], response_expected: bool = False
+    ) -> dict[FunctionID, Any] | None:
+        """
+        Send a request to the Labnode
+        Parameters
+        ----------
+        data: dict
+            The dictionary with the requests.
+        response_expected: bool
+            Must be true if this is a query or if an ACK is requested
+        Returns
+        -------
+        dict
+            A dictionary with results and/or ACKs. They dictionary keys are the FunctionIDs of the request.
+        """
         try:
             return await super().send_request(data, response_expected)
         except NotConnectedError:
             # reraise with different message
-            raise NotConnectedError("Labnode serial connection not connected.") from None
+            raise NotConnectedError("Labnode IP connection not connected.") from None
 
     async def connect(self) -> None:
-        # We need to lock the `connect()` call, because we
-        self._read_lock = asyncio.Lock() if self._read_lock is None else self._read_lock
+        """
+        Connect to the Labnode using an ip connection and start the connection listener.
+        """
         async with self._read_lock:
             if self.is_connected:
                 return

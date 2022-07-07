@@ -16,13 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""The labnode PID controller driver"""
 from __future__ import annotations
 
 import logging
 import warnings
 from decimal import Decimal
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from .devices import DeviceIdentifier, ErrorCode, PidFunctionID
@@ -32,7 +33,7 @@ from .errors import (
     InvalidFormatError,
     InvalidModeError,
     InvalidReplyError,
-    NotInitializedError,
+    PidNotInitializedError,
 )
 from .labnode import Labnode
 
@@ -42,6 +43,12 @@ if TYPE_CHECKING:
 
 @unique
 class FeedbackDirection(Enum):
+    """
+    The sign of the feed action of the PID controller. A positive direction means, that a positive disturbance, causes
+    a positive output from the PID. A negative direction causes feedback in the opposing direction. This is the default
+    and should be selected for most systems.
+    """
+
     NEGATIVE = False
     POSITIVE = True
 
@@ -57,7 +64,6 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     @property
     def device_identifier(cls) -> DeviceIdentifier:
         """
-
         Returns
         -------
         DeviceIdentifier
@@ -65,7 +71,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         return cls.__DEVICE_IDENTIFIER
 
-    RAW_TO_UNIT = {
+    _RAW_TO_UNIT = {
         # We need to truncate to 100 %rH according to the datasheet.
         # The datasheet is *wrong* about the conversion formula. Slightly wrong, but wrong nonetheless.
         # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
@@ -85,7 +91,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
-    RAW_TO_UNIT_11 = {
+    _RAW_TO_UNIT_11 = {
         PidFunctionID.GET_BOARD_TEMPERATURE: lambda x: (Decimal(x) + Decimal("273.15")).quantize(Decimal("1.00")),
         PidFunctionID.GET_HUMIDITY: lambda x: Decimal(x).quantize(Decimal("1.00")),
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
@@ -93,7 +99,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
         super().__init__(connection, api_version)
-        self.__RAW_TO_UNIT = PidController.RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController.RAW_TO_UNIT
+        self.__raw_to_unit = PidController._RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController._RAW_TO_UNIT
         self.__logger = logging.getLogger(__name__)
 
     def __str__(self):
@@ -102,6 +108,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     @staticmethod
     def __test_for_errors(result: dict, key: int) -> None:
         """
+        Test the reply from the device for error messages and raise exceptions accordingly.
 
         Parameters
         ----------
@@ -128,7 +135,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             if status is ErrorCode.INVALID_PARAMETER_TYPE:
                 raise ValueError(f"Invalid value for request {key}")
             if status is ErrorCode.NOT_INITIALIZED:
-                raise NotInitializedError(
+                raise PidNotInitializedError(
                     "PID controller not initialized, Make sure kp, ki, kd and the setpoint is set"
                 )
             if status is ErrorCode.NOT_IMPLEMENTED:
@@ -146,7 +153,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
                 f"Invalid reply received for request id {key}. Is someone using the same socket? Data: {result}"
             )
 
-    async def __send_single_request(self, key: int, value: Optional[Any] = None) -> Any:
+    async def __send_single_request(self, key: int, value: Any | None = None) -> Any:
         result = await self.send_multi_request(
             data={
                 key: value,
@@ -159,7 +166,22 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
         return result[key]
 
-    async def send_multi_request(self, data: dict[Union[PidFunctionID, int], Any]) -> dict:
+    async def send_multi_request(self, data: dict[PidFunctionID | int, Any]) -> dict:
+        """
+        Send one or more requests to the device.
+
+        Parameters
+        ----------
+        data
+
+        Returns
+        -------
+
+        Raises
+        ------
+        ValueError
+            If an unknown function id was sent and `response_expected` was set to True
+        """
         if self.api_version < (0, 11, 0):
             # We need to rewrite some function ids
             if PidFunctionID.GET_HUMIDITY in data:
@@ -190,51 +212,97 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_software_version(self) -> tuple[int, int, int]:
         """
-        Returns The software version running on the device
+        Get the firmware version running on the device. The response is a tuple of ints, that represents the version
+        number.
+
+        Returns
+        -------
+        Tuple of int
+            The version number
         """
         return await self.get_by_function_id(PidFunctionID.GET_SOFTWARE_VERSION)
 
     async def get_hardware_version(self) -> tuple[int, int, int]:
         """
-        Returns The hardware version of the device
+        Get the hardware revision of the device. The response is a tuple of ints, that represents the version number.
+
+        Returns
+        -------
+        Tuple of int
+            The revision number
         """
         return await self.get_by_function_id(PidFunctionID.GET_HARDWARE_VERSION)
 
     async def get_serial(self) -> int:
         """
-        Returns The serial number of the device
+        Get the serial number of the device.
+
+        Returns
+        -------
+        int
+            The serial number of the device
         """
         return await self.get_by_function_id(PidFunctionID.GET_SERIAL_NUMBER)
 
     async def get_device_temperature(self) -> float:
         """
-        Returns The temperature of the onboard sensor
+        Query the temperature of the onboard sensor.
+
+        Returns
+        -------
+        float
+            The temperature of the onboard sensor in Kelvin
         """
         return await self.get_by_function_id(PidFunctionID.GET_BOARD_TEMPERATURE)
 
     async def get_humidity(self) -> float:
         """
-        Returns The humidity as read by the onboard sensor
+        Returns the humidity as read by the onboard sensor.
+
+        Returns
+        -------
+        float
+            The humidity in %rH
         """
         return await self.get_by_function_id(PidFunctionID.GET_HUMIDITY)
 
     async def get_mac_address(self) -> bytearray:
         """
-        Returns The MAC address used by the ethernet port
+        Get the MAC address used by the ethernet port.
+
+        Returns
+        -------
+        bytearray
+            An array of length 6 which contains the MAC
         """
         return await self.get_by_function_id(PidFunctionID.GET_MAC_ADDRESS)
 
-    async def set_mac_address(self, mac: Union[tuple[int, int, int, int, int, int], list[int], bytearray]) -> None:
+    async def set_mac_address(self, mac: tuple[int, int, int, int, int, int] | list[int] | bytearray) -> None:
         """
-        Set the MAC address used by the ethernet port
+        Set the MAC address used by the ethernet port.
+
+        Parameters
+        ----------
+        mac: bytearray or tuple of int
+            The MAC address as a bytearray of length 6
         """
         assert len(mac) == 6
-        mac = tuple(mac)  # convert bytearray if it is one
+        mac = bytearray(mac)  # convert to bytearray, this also makes sure, that all values are in range(0, 256)
         await self.__send_single_request(PidFunctionID.SET_MAC_ADDRESS, mac)
 
     async def get_uuid(self) -> UUID:
         """
-        Returns The universally unique identifier of the node
+        Get the universally unique identifier of the node.
+
+        Returns
+        -------
+        UUID
+            The universally unique identifier of the node
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         if self.api_version < (0, 12, 0):
             raise FunctionNotImplementedError(
@@ -245,7 +313,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_uuid(self, uuid: UUID) -> None:
         """
-        Set the universally unique identifier of the node
+        Set the universally unique identifier of the node.
+
+        Parameters
+        ----------
+        uuid: UUID
+            The universally unique identifier of the node
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         if self.api_version < (0, 12, 0):
             raise FunctionNotImplementedError(
@@ -255,19 +333,40 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_auto_resume(self) -> bool:
         """
-        Returns The MAC address used by the ethernet port
+        Query the node, whether is automatically resumes after a reset (intentionally or unintentionally). If set, the
+        node will return to the same state. If not, the node will always come up as disabled with default settings.
+
+        Returns
+        -------
+        bool
+            True if the node keeps its enabled state after a reset
         """
         return await self.get_by_function_id(PidFunctionID.GET_AUTO_RESUME)
 
     async def set_auto_resume(self, value: bool):
         """
-        Set the controller to automatically load the previous settings and resume its action
+        Set the controller to automatically load the previous settings and resume its action.
+
+        Parameters
+        ----------
+        value: bool
+            Set to True to load the node settings on boot
         """
         await self.__send_single_request(PidFunctionID.SET_AUTO_RESUME, bool(value))
 
     async def set_lower_output_limit(self, limit: int) -> None:
         """
-        Set the minimum allowed output of the DAC in bit values
+        Set the minimum output of the DAC in bit values.
+
+        Parameters
+        ----------
+        limit: int
+            The minimum output value of the DAC
+
+        Raises
+        ------
+        ValueError
+            If the limit was out of bounds.
         """
         try:
             await self.__send_single_request(PidFunctionID.SET_LOWER_OUTPUT_LIMIT, limit)
@@ -276,13 +375,28 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_lower_output_limit(self) -> int:
         """
-        Get the minimum allowed output of the DAC in bit values
+        Get the minimum output value of the DAC.
+
+        Returns
+        -------
+        int
+            The minimum output in bit
         """
         return await self.get_by_function_id(PidFunctionID.GET_LOWER_OUTPUT_LIMIT)
 
     async def set_upper_output_limit(self, limit: int) -> None:
         """
-        Set the maximum allowed output of the DAC in bit values
+        Set the maximum output of the DAC in bit values.
+
+        Parameters
+        ----------
+        limit: int
+            The maximum output value of the DAC
+
+        Raises
+        ------
+        ValueError
+            If the limit was out of bounds.
         """
         try:
             await self.__send_single_request(PidFunctionID.SET_UPPER_OUTPUT_LIMIT, limit)
@@ -291,27 +405,58 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_upper_output_limit(self) -> int:
         """
-        Get the minimum allowed output of the DAC in bit values
+        Get the maximum output of the DAC in bit values
+
+        Returns
+        -------
+        int
+            The upper limit for the output DAC
         """
         return await self.get_by_function_id(PidFunctionID.GET_UPPER_OUTPUT_LIMIT)
 
     async def set_timeout(self, timeout: int) -> None:
         """
-        Set the timeout, that defines when the controller switched to fallback mode. The time is in ms
+        Set the timeout, that defines when the controller switches to fallback mode. The time is in ms.
+
+        Parameters
+        ----------
+        timeout
+            The timeout in ms
         """
         assert timeout > 0
         await self.__send_single_request(PidFunctionID.SET_TIMEOUT, int(timeout))
 
     async def get_timeout(self) -> int:
+        """
+        Get the time, that mass pass between updates, before the controller switches to fallback mode.
+
+        Returns
+        -------
+        int
+            The time in ms, that the controller waits between updates
+        """
         return await self.get_by_function_id(PidFunctionID.GET_TIMEOUT)
 
     async def set_dac_gain(self, enable: bool) -> None:
         """
         Set the gain of the DAC to x2. This will increase the output voltage range from 0..5V to 0..10V.
+
+        Parameters
+        ----------
+        enable
+            True to enable the gain
         """
         await self.__send_single_request(PidFunctionID.SET_GAIN, bool(enable))
 
     async def is_dac_gain_enabled(self) -> bool:
+        """
+        Return True if the DAC output goes from 0-10 V. False if the DAC gain is disabled and the output is 0-5 V.
+
+        Returns
+        -------
+        bool
+            True if the gain is enabled
+        """
         return await self.get_by_function_id(PidFunctionID.GET_GAIN)
 
     async def set_pid_feedback_direction(self, feedback: FeedbackDirection) -> None:
@@ -321,28 +466,87 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         dealing with e.g. temperature control, this means, that if the temperature is too high,
         an increase in the feedback will increase the cooling action.
         In short: If set to `FeedbackDirection.NEGATIVE`, a positive error will result in a negative plant response.
+
+        Parameters
+        ----------
+        feedback: FeedbackDirection
+            The direction of the controller response
         """
         feedback = FeedbackDirection(feedback)
         await self.__send_single_request(PidFunctionID.SET_DIRECTION, feedback.value)
 
     async def get_pid_feedback_direction(self) -> FeedbackDirection:
+        """
+        Get the sign of the pid output. If set to `FeedbackDirection.NEGATIVE`, a positive error will result in a
+        negative plant response.
+
+        Returns
+        -------
+        FeedbackDirection
+            The direction of the controller response
+        """
         return FeedbackDirection(await self.get_by_function_id(PidFunctionID.GET_DIRECTION))
 
     async def set_output(self, value: int) -> None:
+        """
+        Set the output value of the DAC. This function only works, when the controller mode is set to disabled (manual).
+        Use `set_enabled(false)`.
+
+        Parameters
+        ----------
+        value: int
+            The output in bit
+        """
         await self.__send_single_request(PidFunctionID.SET_OUTPUT, int(value))
 
     async def get_output(self) -> int:
+        """
+        Queries the output value of the DAC.
+
+        Returns
+        -------
+        int
+            The output of the DAC in bit
+        """
         return await self.get_by_function_id(PidFunctionID.GET_OUTPUT)
 
     async def set_enabled(self, enabled: bool) -> None:
+        """
+        Set the PID controller to enabled/automatic or disabled/manual mode.
+
+        Parameters
+        ----------
+        enabled: bool
+            True to enable the PID controller
+        """
         await self.__send_single_request(PidFunctionID.SET_ENABLED, bool(enabled))
 
     async def is_enabled(self) -> bool:
+        """
+        Queries the state of the PID controller.
+
+        Returns
+        -------
+        bool
+            True if the controller is enabled
+        """
         return await self.get_by_function_id(PidFunctionID.GET_ENABLED)
 
     async def __set_kx(self, function_id: PidFunctionID, kx: int) -> None:  # pylint: disable=invalid-name
         """
         Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+
+        Parameters
+        ----------
+        function_id: PidFunctionID
+            Select which parameter set should be updated
+        kx: int
+            The value of the Kp, Ki or Kd parameter
+
+        Raises
+        ------
+        InvalidFormatError
+            If the pid constant was rejected.
         """
         if self.api_version < (0, 11, 0) and function_id in (
             PidFunctionID.SET_SECONDARY_KP,
@@ -357,15 +561,14 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_kp(self, kp: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
-        Set the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        Set the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.
 
         Parameters
         ----------
         kp: int
             The PID k_p parameter in Q16.16 format
-        config_id: {0, 1}
-            The id of the parameter set. The controller supports two pid parameter sets.
-            Either 0 or 1.
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
         """
         assert config_id in (0, 1)
         if config_id == 0:
@@ -375,13 +578,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_kp(self, config_id: int = 0) -> int:
         """
-        Get the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        Get the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.
 
         Parameters
         ----------
-        config_id: {0, 1}
-            The id of the parameter set. The controller supports two pid parameter sets.
-            Either 0 or 1.
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         assert config_id in (0, 1)
         if config_id == 0:
@@ -396,7 +603,14 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_ki(self, ki: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
-        Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.
+
+        Parameters
+        ----------
+        ki: int
+            The parameter value in Q16.16 format (32 bit)
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
         """
         assert config_id in (0, 1)
         if config_id == 0:
@@ -406,7 +620,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_ki(self, config_id: int = 0) -> int:
         """
-        Get the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        Get the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.
+
+        Parameters
+        ----------
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         assert config_id in (0, 1)
         if config_id == 0:
@@ -421,7 +645,14 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_kd(self, kd: int, config_id: int = 0) -> None:  # pylint: disable=invalid-name
         """
-        Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.
+
+        Parameters
+        ----------
+        kd: int
+            The parameter value in Q16.16 format (32 bit)
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
         """
         assert config_id in (0, 1)
         if config_id == 0:
@@ -431,7 +662,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_kd(self, config_id: int = 0) -> int:
         """
-        Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format
+        Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.
+
+        Parameters
+        ----------
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         assert config_id in (0, 1)
         if config_id == 0:
@@ -444,10 +685,21 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             f"{PidFunctionID.GET_SECONDARY_KD.name} is only supported in api version >= 0.11.0"
         )
 
-    async def set_input(self, value: int, return_output: bool = False) -> None:
+    async def set_input(self, value: int, return_output: bool = False) -> int | None:
         """
-        Set the input, which is fed to the PID controller. The value is in Q16.16 format
-        Returns The new output
+        Set the input, which is fed to the PID controller. The value is in Q16.16 format.
+
+        Parameters
+        ----------
+        value: int
+            The input value in Q16.16 format
+        return_output: bool
+            Returns the output of the controller if True
+
+        Returns
+        -------
+        int or None:
+            Returns the output of the controller if return_output is set
         """
         # We need to send a multi_request, because if return_output is True, we want to get the
         # output after the input has been set
@@ -463,7 +715,19 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_setpoint(self, value: int, config_id: int = 0) -> None:
         """
-        Set the PID setpoint. The value is in Q16.16 format
+        Set the PID setpoint. The value is in Q16.16 format.
+
+        Parameters
+        ----------
+        value: int
+            The setpoint of the PID controller in Q16.16 format.
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         assert config_id in (0, 1)
         try:
@@ -481,12 +745,27 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_setpoint(self, config_id: int = 0) -> int:
         """
-        Get the PID setpoint. The value is in Q16.16 format
+        Get the PID setpoint. The value is in Q16.16 format.
+
+        Parameters
+        ----------
+        config_id: {0, 1}, default=0
+            The id of the parameter set. The controller supports two pid parameter sets. Either 0 or 1.
+        Returns
+        -------
+        int
+            The setpoint value for the given config set.
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
         """
         assert config_id in (0, 1)
         if config_id == 0:
             return await self.get_by_function_id(PidFunctionID.GET_SETPOINT)
 
+        # Only allow the secondary parameter set on API version >=0.11.0
         if self.api_version >= (0, 11, 0):
             return await self.get_by_function_id(PidFunctionID.GET_SECONDARY_SETPOINT)
 
@@ -496,10 +775,25 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def set_secondary_config(self, config_id: int) -> None:
         """
-        Set the offset added to the internal temperature sensor, when running in fallback mode. The value is
-        a floating point number in units of K
+        Set the configuration used when running in fallback mode.
+
+        Parameters
+        ----------
+        config_id: {0, 1}
+            The configuration to be used. The controller supports two pid parameter sets. Either 0 or 1.
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
+        InvalidFormatError
+            If the config_id is not in {0, 1}.
         """
         assert config_id in (0, 1)
+        if self.api_version < (0, 11, 0):
+            raise FunctionNotImplementedError(
+                f"{PidFunctionID.SET_SECONDARY_PID_PARAMETER_SET.name} is only supported in api version >= 0.11.0"
+            )
         try:
             await self.__send_single_request(PidFunctionID.SET_SECONDARY_PID_PARAMETER_SET, int(config_id))
         except InvalidFormatError:
@@ -507,16 +801,29 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_secondary_config(self) -> int:
         """
-        Returns The offset, which is subtracted from the internal temperature sensor when running in fallback mode. The
-        return value is in units of K
+        Set the configuration id used when running in fallback mode.
+
+        Returns
+        -------
+        int
+            The configuration used, when running in fallback mode. The controller supports two pid parameter sets.
+            Either 0 or 1.
         """
+        if self.api_version < (0, 11, 0):
+            raise FunctionNotImplementedError(
+                f"{PidFunctionID.GET_SECONDARY_PID_PARAMETER_SET.name} is only supported in api version >= 0.11.0"
+            )
         return await self.get_by_function_id(PidFunctionID.GET_SECONDARY_PID_PARAMETER_SET)
 
     async def set_fallback_update_interval(self, value: int):
         """
-        Set the update interval, when running in fallback mode. This value should be same as, when
-        not running in fallback mode, to keep the PID constants the same. The value is
-        an integer in ms
+        Set the update interval, when running in fallback mode. The Controller will feed a value from the internal
+        sensor to its PID controller every {value} ms.
+
+        Parameters
+        ----------
+        value: int
+            The update interval in ms
         """
         assert value > 0
         try:
@@ -526,8 +833,12 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_fallback_update_interval(self) -> int:
         """
-        Returns The update interval, which is used when running in fallback mode. The
-        return value is in units of K
+        The update interval, which is used when running in fallback mode. The return value is in ms.
+
+        Returns
+        -------
+        int:
+            The number of ms between updates with the backup sensor when running in fallback mode.
         """
         return await self.get_by_function_id(PidFunctionID.GET_FALLBACK_UPDATE_INTERVAL)
 
@@ -544,15 +855,60 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         await self.__send_single_request(PidFunctionID.RESET_SETTINGS)
 
     async def set_serial(self, serial: int) -> None:
+        """
+        Set the serial number of the device
+        Parameters
+        ----------
+        serial: int
+            The serial number. Maximum: 4294967295 (32 bit)
+
+        Raises
+        ------
+        ValueError
+            If the serial number is not valid.
+        """
         try:
             await self.__send_single_request(PidFunctionID.SET_SERIAL_NUMBER, int(serial))
         except InvalidFormatError:
             raise ValueError("Invalid serial number") from None
 
     async def get_active_connection_count(self) -> int:
+        """
+        Get the number of open sockets.
+        Returns
+        -------
+        int
+            The number of sockets
+
+        Raises
+        ------
+        FunctionNotImplementedError
+            If the firmware version does not support the request.
+        """
+        if self.api_version < (0, 11, 0):
+            raise FunctionNotImplementedError(
+                f"{PidFunctionID.GET_ACTIVE_CONNECTION_COUNT.name} is only supported in api version >= 0.11.0"
+            )
         return await self.get_by_function_id(PidFunctionID.GET_ACTIVE_CONNECTION_COUNT)
 
-    async def get_by_function_id(self, function_id: PidFunctionID) -> Any:
+    async def get_by_function_id(self, function_id: PidFunctionID | int) -> Any:
+        """
+        Query a value by function id, instead of calling the named function.
+
+        Parameters
+        ----------
+        function_id: PidFunctionID or int
+            The function to query
+        Returns
+        -------
+        Any
+            The result of the query.
+
+        Raises
+        ------
+        InvalidCommandError
+            If the function id was given as an integer and is unknown
+        """
         try:
             function_id = PidFunctionID(function_id)
         except ValueError:
@@ -561,7 +917,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
         result = await self.__send_single_request(function_id)
 
-        if function_id in self.__RAW_TO_UNIT:
-            result = self.__RAW_TO_UNIT[function_id](result)
+        if function_id in self.__raw_to_unit:
+            result = self.__raw_to_unit[function_id](result)
 
         return result

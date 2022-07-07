@@ -16,13 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""All basic classes for connection can be found here"""
 from __future__ import annotations
 
 import asyncio
 import errno
 import logging
 from asyncio import StreamReader, StreamWriter
-from typing import Any, AsyncIterator
+from types import TracebackType
+from typing import Any, AsyncIterator, Type
 
 import cbor2 as cbor
 
@@ -40,7 +42,9 @@ class NotConnectedError(ConnectionError):
     """
 
 
-class Connection:
+class Connection:  # pylint: disable=too-many-instance-attributes
+    """The base connection used for all Labnode connections"""
+
     _SEPARATOR = b"\x00"
 
     @property
@@ -57,7 +61,7 @@ class Connection:
     @property
     def is_connected(self) -> bool:
         """
-        Returns *True* if, the connection is established.
+        Returns *True* if the connection is established.
         """
         return self.__writer is not None and not self.__writer.is_closing()
 
@@ -83,20 +87,66 @@ class Connection:
         self.__writer: asyncio.StreamWriter | None = None
         self.__request_id_queue: asyncio.Queue[int] | None = None
         self.timeout = timeout
-        self._read_lock: asyncio.Lock | None = None  # We need to lock the asyncio stream reader
+        self._read_lock = asyncio.Lock()  # We need to lock the asyncio stream reader
         self.__pending_requests: dict[int, asyncio.Future] = {}
 
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.ERROR)  # Only log really important messages
 
-    def __encode_data(self, data: str) -> bytearray:
-        return bytearray(cobs.encode(data) + self._SEPARATOR)
+    async def __aenter__(self) -> Labnode:
+        """
+        Connect to the Labnode and automatically enumerate it
+        Returns
+        -------
+        Labnode
+            Device of the Labnode family
+        """
+        await self.connect()
+        return await self._get_device()
+
+    async def __aexit__(
+        self, exc_type: Type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None
+    ) -> None:
+        await self.disconnect()
+
+    def __encode_data(self, data: bytes) -> bytes:
+        """
+        Encode a bytestring using the COBS encoder.
+        Parameters
+        ----------
+        data: bytes
+            The bytestring to be encoded
+        Returns
+        -------
+        bytes
+            The encoded bytestring
+        """
+        return cobs.encode(data) + self._SEPARATOR
 
     @staticmethod
-    def __decode_data(data):
+    def __decode_data(data: bytes) -> bytes:
+        """
+        Decode the data using the COBS decoder
+        Parameters
+        ----------
+        data: bytes
+            The encoded data
+
+        Returns
+        -------
+        bytes
+            The decoded bytestring
+        """
         return cobs.decode(data[:-1])  # Strip the separator
 
     async def get_device_id(self) -> tuple[DeviceIdentifier, tuple[int, int, int]]:
+        """
+        Query the Labnode for its device id and the version of its API implementation.
+        Returns
+        -------
+        Tuple of DeviceIdentifier and tuple of int
+            The Device id and the api version
+        """
         self.__logger.debug("Getting device type")
         result = await self.send_request(
             data={
@@ -114,10 +164,32 @@ class Connection:
             raise
 
     async def _get_device(self) -> Labnode:
+        """
+        Autodiscover the device by querying its id and then producing the corresponding device class
+        Returns
+        -------
+        Labnode
+            The Labnode object representing the device
+        """
         device_id, api_version = await self.get_device_id()
         return device_factory.get(device_id, self, api_version=api_version)
 
+    async def connect(self):
+        """
+        Connect to the Labnode and start the connection listener.
+        """
+        raise NotImplementedError
+
     async def _connect(self, reader: StreamReader, writer: StreamWriter) -> None:
+        """
+        Starts the data producer tasks when given the Streamreader/writer
+        Parameters
+        ----------
+        reader: StreamReader
+            The reader interface of the connection
+        writer: StreamWriter
+            The writer interface of the connection
+        """
         self.__reader, self.__writer = reader, writer
 
         # The maximum sequence number is a uint8_t. That means 255.
@@ -129,7 +201,22 @@ class Connection:
 
         self.__running_tasks.add(asyncio.create_task(self.main_loop()))
 
-    async def send_request(self, data: dict, response_expected: bool = False) -> dict[FunctionID, Any] | None:
+    async def send_request(
+        self, data: dict[FunctionID | int, Any], response_expected: bool = False
+    ) -> dict[FunctionID, Any] | None:
+        """
+        Send a request to the Labnode
+        Parameters
+        ----------
+        data: dict
+            The dictionary with the requests.
+        response_expected: bool
+            Must be true if this is a query or if an ACK is requested
+        Returns
+        -------
+        dict
+            A dictionary with results and/or ACKs. They dictionary keys are the FunctionIDs of the request.
+        """
         if not self.is_connected:
             raise NotConnectedError("Not connected")
         assert self.__writer is not None  # already done in self.is_connected
@@ -167,7 +254,15 @@ class Connection:
             # Return the sequence number
             self.__request_id_queue.put_nowait(request_id)
 
-    async def __read_packets(self) -> AsyncIterator[dict]:
+    async def __read_packets(self) -> AsyncIterator[dict[int, Any]]:
+        """
+        Read data from the connection
+
+        Yields
+        -------
+        dict
+            A dictionary with int keys, that contains the reply of the Labnode
+        """
         while "loop not cancelled":
             try:
                 # We need to lock the stream reader, because only one coroutine is allowed to read data
@@ -176,10 +271,11 @@ class Connection:
                 self.__logger.debug("Received COBS encoded data: %(data)s", {"data": data.hex()})
                 data = self.__decode_data(data)
                 self.__logger.debug("Unpacked CBOR encoded data: %(data)s", {"data": data.hex()})
-                data = cbor.loads(data)
-                self.__logger.debug("Decoded received data: %(data)s", {"data": data})
+                result = cbor.loads(data)
+                self.__logger.debug("Decoded received data: %(result)s", {"result": result})
 
-                yield data
+                # TODO: Add some pydantic type checking here
+                yield result
             except (asyncio.exceptions.IncompleteReadError, ConnectionResetError):
                 # the remote endpoint closed the connection
                 self.__logger.error(
@@ -212,6 +308,9 @@ class Connection:
                 pass
 
     async def main_loop(self) -> None:
+        """
+        This loops reads data from the connection and forwards it to the waiters (Futures).
+        """
         try:
             async for packet in self.__read_packets():
                 # Read packets from the socket and process them.
@@ -220,6 +319,9 @@ class Connection:
             await self.__close_transport()
 
     async def disconnect(self) -> None:
+        """
+        Closes the connection. Returns early if the connection is not up.
+        """
         if not self.is_connected:
             return
         # Cancel the main task, which will shut down the transport via __close_transport()
@@ -231,7 +333,6 @@ class Connection:
             pass
         finally:
             self.__running_tasks.clear()
-            self._read_lock = None
 
     async def __close_transport(self) -> None:
         # Flush data

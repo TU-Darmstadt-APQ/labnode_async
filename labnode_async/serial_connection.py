@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # Copyright (C) 2022  Patrick Baus
@@ -17,29 +16,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""The serial connection module for all Labnodes"""
 from __future__ import annotations
 
-import asyncio
 import logging
-from dataclasses import asdict, dataclass
-from types import TracebackType
-from typing import Type
+from typing import Any
 
 import serial_asyncio
 
-from labnode_async.labnode import Labnode
-
 from .connection import Connection, NotConnectedError
-
-
-@dataclass
-class TtyOptions:
-    baudrate: int
-    bytesize: int
-    parity: str
-    stopbits: int
-    xonxoff: bool
-    rtscts: bool
+from .devices import FunctionID
 
 
 class SerialConnection(Connection):
@@ -53,14 +39,14 @@ class SerialConnection(Connection):
         """
         Returns The hostname of the connection
         """
-        return self.__tty
+        return self.__tty_kwargs["url"]
 
     @property
     def baudrate(self) -> int:
         """
         Returns The port used by the connection
         """
-        return self.__tty_options.baudrate
+        return self.__tty_kwargs["baudrate"]
 
     @property
     def endpoint(self) -> str:
@@ -70,48 +56,52 @@ class SerialConnection(Connection):
         str
             A string representation of the connection endpoint
         """
-        return str(self.__tty)
+        return self.tty
 
-    def __init__(
-        self,
-        tty: str,
-        baudrate: int = 115200,
-        bytesize: int = 8,
-        parity: str = "N",
-        stopbits: int = 1,
-        xonxoff: bool = False,
-        rtscts: bool = False,
-        timeout: float = 2.5,
-    ) -> None:
+    def __init__(self, url: str, *, baudrate: int = 115200, timeout: float = 2.5, **kwargs: dict) -> None:
         """
         Parameters
         ----------
-        tty: str
+        url: str
             The serial tty like `/dev/ttyUSB0` or `COM3` or an integer port number
-        baudrate: int, default=9600
+        baudrate: int, default=115200
             The baud rate of the serial port
         timeout: float
             the timeout in seconds used when making queries or connection attempts
+        *: tuple, optional
+            arguments will be ignored
+        **kwargs: dict, optional
+            keyword arguments will be passed on to Serial(). See
+            `https://pyserial.readthedocs.io/en/latest/pyserial_api.html` for more information.
         """
         super().__init__(timeout)
-        self.__tty = tty
-        self.__tty_options: TtyOptions = TtyOptions(baudrate, bytesize, parity, stopbits, xonxoff, rtscts)
+        self.__tty_kwargs: dict[str, Any] = kwargs
+        self.__tty_kwargs["url"] = url
+        self.__tty_kwargs["baudrate"] = baudrate
+        self.__tty_kwargs["write_timeout"] = timeout
+
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.ERROR)  # Only log really important messages
-
-    async def __aenter__(self) -> Labnode:
-        await self.connect()
-        return await self._get_device()
-
-    async def __aexit__(
-        self, exc_type: Type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None
-    ) -> None:
-        await self.disconnect()
 
     def __str__(self) -> str:
         return f"SerialConnection({self.endpoint})"
 
-    async def send_request(self, data: dict, response_expected: bool = False) -> dict | None:
+    async def send_request(
+        self, data: dict[FunctionID, Any], response_expected: bool = False
+    ) -> dict[FunctionID, Any] | None:
+        """
+        Send a request to the Labnode
+        Parameters
+        ----------
+        data: dict
+            The dictionary with the requests.
+        response_expected: bool
+            Must be true if this is a query or if an ACK is requested
+        Returns
+        -------
+        dict
+            A dictionary with results and/or ACKs. They dictionary keys are the FunctionIDs of the request.
+        """
         try:
             return await super().send_request(data, response_expected)
         except NotConnectedError:
@@ -119,13 +109,13 @@ class SerialConnection(Connection):
             raise NotConnectedError("Labnode serial connection not connected.") from None
 
     async def connect(self) -> None:
-        self._read_lock = asyncio.Lock() if self._read_lock is None else self._read_lock
+        """
+        Connect to the Labnode using a serial connection and start the connection listener.
+        """
         async with self._read_lock:
             if self.is_connected:
                 return
 
-            reader, writer = await serial_asyncio.open_serial_connection(
-                url=self.__tty, timeout=self.timeout, write_timeout=self.timeout, **asdict(self.__tty_options)
-            )
-            self.__logger.info("Labnode serial connection established to port '%s'", self.__tty)
+            reader, writer = await serial_asyncio.open_serial_connection(**self.__tty_kwargs)
+            self.__logger.info("Labnode serial connection established to port '%s'", self.tty)
             await super()._connect(reader, writer)

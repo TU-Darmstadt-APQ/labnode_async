@@ -17,15 +17,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+"""This is an example, that demonstrates the most common functions calls of PID controller labnode."""
 import asyncio
-from binascii import hexlify  # To print the MAC address
 import logging
 import warnings
+from binascii import hexlify  # To print the MAC address
 
 from labnode_async import IPConnection, PidController, FeedbackDirection
 from labnode_async.devices import DeviceIdentifier
 
 async def main():
+    """Connect to the labnode and run the example."""
     try:
         ipcon = IPConnection(hostname='127.0.0.1', port=4223)
         async with ipcon as pid_controller:
@@ -66,15 +68,16 @@ async def main():
             print(f"Calibration offset: {await pid_controller.get_calibration_offset()} K")
             #await pid_controller.reset()
     except ConnectionRefusedError:
-        logging.getLogger(__name__).error('Could not connect to remote target. Connection refused. Is the device up?')
+        logging.getLogger(__name__).error("Could not connect to remote target. Connection refused. Is the device up?")
     except asyncio.CancelledError:
-        print('Stopped the main loop')
+        print("Stopped the main loop")
     finally:
-        logging.getLogger(__name__).debug('Shutting down the main task')
+        logging.getLogger(__name__).debug("Shutting down the main task")
+
 
 # Report all mistakes managing asynchronous resources.
-warnings.simplefilter('always', ResourceWarning)
-logging.basicConfig(level=logging.INFO)    # Enable logs from the ip connection. Set to debug for even more info
+warnings.simplefilter("always", ResourceWarning)
+logging.basicConfig(level=logging.INFO)  # Enable logs from the ip connection. Set to debug for even more info
 
 # Start the main loop and run the async loop forever
-asyncio.run(main(),debug=True)
+asyncio.run(main(), debug=True)
