@@ -58,7 +58,7 @@ class SerialConnection(Connection):
         """
         return self.tty
 
-    def __init__(self, url: str, *, baudrate: int = 115200, timeout: float = 2.5, **kwargs: dict) -> None:
+    def __init__(self, url: str, *, baudrate: int = 115200, timeout: float = 2.5, **kwargs: Any) -> None:
         """
         Parameters
         ----------
@@ -75,7 +75,7 @@ class SerialConnection(Connection):
             `https://pyserial.readthedocs.io/en/latest/pyserial_api.html` for more information.
         """
         super().__init__(timeout)
-        self.__tty_kwargs: dict[str, Any] = kwargs
+        self.__tty_kwargs = kwargs.copy()
         self.__tty_kwargs["url"] = url
         self.__tty_kwargs["baudrate"] = baudrate
         self.__tty_kwargs["write_timeout"] = timeout
@@ -87,8 +87,8 @@ class SerialConnection(Connection):
         return f"SerialConnection({self.endpoint})"
 
     async def send_request(
-        self, data: dict[FunctionID, Any], response_expected: bool = False
-    ) -> dict[FunctionID, Any] | None:
+        self, data: dict[FunctionID | int, Any], response_expected: bool = False
+    ) -> dict[int, Any] | None:
         """
         Send a request to the Labnode
         Parameters

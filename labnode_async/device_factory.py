@@ -21,7 +21,7 @@ The device factory which allows creating instances of Labnodes from their device
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any, Type, cast
 
 from .devices import DeviceIdentifier
 from .labnode import Labnode
@@ -49,7 +49,8 @@ class DeviceFactory:
         device: Type[Labnode]
             A Labnode device class to be registered with the factory.
         """
-        self.__available_devices[device.device_identifier] = device
+        # We cast device.device_identifier because mypy has problems class properties
+        self.__available_devices[cast(DeviceIdentifier, device.device_identifier)] = device
 
     def get(self, device_id: DeviceIdentifier, connection: Connection, *args: Any, **kwargs: Any) -> Labnode:
         """

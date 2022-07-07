@@ -72,8 +72,8 @@ class IPConnection(Connection):
         return f"IPConnection({self.hostname}:{self.port})"
 
     async def send_request(
-        self, data: dict[FunctionID, Any], response_expected: bool = False
-    ) -> dict[FunctionID, Any] | None:
+        self, data: dict[FunctionID | int, Any], response_expected: bool = False
+    ) -> dict[int, Any] | None:
         """
         Send a request to the Labnode
         Parameters

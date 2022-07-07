@@ -24,7 +24,7 @@ import errno
 import logging
 from asyncio import StreamReader, StreamWriter
 from types import TracebackType
-from typing import Any, AsyncIterator, Type
+from typing import Any, AsyncIterator, Type, cast
 
 import cbor2 as cbor
 
@@ -85,7 +85,14 @@ class Connection:  # pylint: disable=too-many-instance-attributes
         self.__running_tasks: set[asyncio.Task] = set()
         self.__reader: asyncio.StreamReader | None = None
         self.__writer: asyncio.StreamWriter | None = None
-        self.__request_id_queue: asyncio.Queue[int] | None = None
+        self.__request_id_queue: asyncio.Queue[int] = asyncio.Queue(maxsize=24)
+        # Initialize the sequence numbers used.
+        # The maximum sequence number is a uint8_t. That means 255.
+        # We only use the range of 0 to 23, because that requires only
+        # one byte when CBOR encoded
+        for i in range(24):
+            self.__request_id_queue.put_nowait(i)
+
         self.timeout = timeout
         self._read_lock = asyncio.Lock()  # We need to lock the asyncio stream reader
         self.__pending_requests: dict[int, asyncio.Future] = {}
@@ -157,7 +164,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
         )
         try:
             assert result is not None
-            api_version: tuple[int, int, int] = tuple(result[FunctionID.GET_API_VERSION])
+            api_version = cast(tuple[int, int, int], tuple(result[FunctionID.GET_API_VERSION]))
             return DeviceIdentifier(result[FunctionID.GET_DEVICE_TYPE]), api_version
         except KeyError:
             self.__logger.error("Got invalid reply for device id request: %s", result)
@@ -182,7 +189,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
     async def _connect(self, reader: StreamReader, writer: StreamWriter) -> None:
         """
-        Starts the data producer tasks when given the Streamreader/writer
+        Starts the data producer tasks when given the StreamReader/Writer
         Parameters
         ----------
         reader: StreamReader
@@ -192,18 +199,11 @@ class Connection:  # pylint: disable=too-many-instance-attributes
         """
         self.__reader, self.__writer = reader, writer
 
-        # The maximum sequence number is a uint8_t. That means 255.
-        # We only use the range of 0 to 23, because that requires only
-        # one byte when CBOR encoded
-        self.__request_id_queue = asyncio.Queue(maxsize=24)
-        for i in range(24):
-            self.__request_id_queue.put_nowait(i)
-
-        self.__running_tasks.add(asyncio.create_task(self.main_loop()))
+        self.__running_tasks.add(asyncio.create_task(self.__main_loop()))
 
     async def send_request(
         self, data: dict[FunctionID | int, Any], response_expected: bool = False
-    ) -> dict[FunctionID, Any] | None:
+    ) -> dict[int, Any] | None:
         """
         Send a request to the Labnode
         Parameters
@@ -223,6 +223,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
         # If we are waiting for a response, send the request, then pass on the response as a future
         request_id = await self.__request_id_queue.get()
+        self.__request_id_queue.task_done()
         try:
             data[FunctionID.REQUEST_ID] = request_id
             self.__logger.debug("Sending data: %(payload)s", {"payload": data})
@@ -267,6 +268,8 @@ class Connection:  # pylint: disable=too-many-instance-attributes
             try:
                 # We need to lock the stream reader, because only one coroutine is allowed to read data
                 async with self._read_lock:
+                    # Always true, because the function is only called by __main_loop()
+                    assert self.__reader is not None
                     data = await self.__reader.readuntil(self._SEPARATOR)
                 self.__logger.debug("Received COBS encoded data: %(data)s", {"data": data.hex()})
                 data = self.__decode_data(data)
@@ -291,9 +294,9 @@ class Connection:  # pylint: disable=too-many-instance-attributes
                 self.__logger.exception("Error while reading packet.")
                 await asyncio.sleep(0.1)
 
-    async def __process_packet(self, data: dict) -> None:
+    async def __process_packet(self, data: dict[int, Any]) -> None:
         try:
-            request_id = data.get(FunctionID.REQUEST_ID)
+            request_id: int = cast(int, data.get(FunctionID.REQUEST_ID))
         except AttributeError:
             self.__logger.error("Received invalid data: %(data)s", {"data": data})
         else:
@@ -307,7 +310,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
                 # Drop the packet, because it is not our sequence number
                 pass
 
-    async def main_loop(self) -> None:
+    async def __main_loop(self) -> None:
         """
         This loops reads data from the connection and forwards it to the waiters (Futures).
         """
@@ -337,6 +340,9 @@ class Connection:  # pylint: disable=too-many-instance-attributes
     async def __close_transport(self) -> None:
         # Flush data
         try:
+            # This assertion is always true, because the function is only called by __main_loop(), which is started
+            # after self.__writer is assigned.
+            assert self.__writer is not None
             if self.__writer.can_write_eof():
                 self.__writer.write_eof()
             await self.__writer.drain()

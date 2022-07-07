@@ -23,7 +23,7 @@ import logging
 import warnings
 from decimal import Decimal
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 from uuid import UUID
 
 from .devices import DeviceIdentifier, ErrorCode, PidFunctionID
@@ -71,7 +71,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         return cls.__DEVICE_IDENTIFIER
 
-    _RAW_TO_UNIT = {
+    _RAW_TO_UNIT: dict[PidFunctionID, Callable] = {
         # We need to truncate to 100 %rH according to the datasheet.
         # The datasheet is *wrong* about the conversion formula. Slightly wrong, but wrong nonetheless.
         # They are "off by 1" with the conversion of the 16 bit result. They divide by 2**16 but should divide by
@@ -91,7 +91,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
-    _RAW_TO_UNIT_11 = {
+    _RAW_TO_UNIT_11: dict[PidFunctionID, Callable] = {
         PidFunctionID.GET_BOARD_TEMPERATURE: lambda x: (Decimal(x) + Decimal("273.15")).quantize(Decimal("1.00")),
         PidFunctionID.GET_HUMIDITY: lambda x: Decimal(x).quantize(Decimal("1.00")),
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
@@ -99,7 +99,9 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
         super().__init__(connection, api_version)
-        self.__raw_to_unit = PidController._RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController._RAW_TO_UNIT
+        self.__raw_to_unit: dict[PidFunctionID, Callable] = (
+            PidController._RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController._RAW_TO_UNIT
+        )
         self.__logger = logging.getLogger(__name__)
 
     def __str__(self):
@@ -192,6 +194,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
                 del data[PidFunctionID.GET_BOARD_TEMPERATURE]
 
         result = await self.connection.send_request(data=data, response_expected=True)
+        assert result is not None
 
         if self.api_version < (0, 11, 0):
             # We need to rewrite some function ids
@@ -703,7 +706,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         # We need to send a multi_request, because if return_output is True, we want to get the
         # output after the input has been set
-        request = {PidFunctionID.SET_INPUT: int(value)}
+        request: dict[int, int | None] = {PidFunctionID.SET_INPUT: int(value)}
         if return_output:
             request[PidFunctionID.GET_OUTPUT] = None
         result = await self.send_multi_request(request)
@@ -712,6 +715,8 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         self.__test_for_errors(result, PidFunctionID.SET_INPUT)
         if return_output:
             return result[PidFunctionID.GET_OUTPUT]
+
+        return None
 
     async def set_setpoint(self, value: int, config_id: int = 0) -> None:
         """
