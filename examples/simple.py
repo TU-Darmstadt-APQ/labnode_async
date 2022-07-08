@@ -7,7 +7,7 @@ from labnode_async import IPConnection, PidController
 
 async def main():
     """Connect to the labnode and run the example."""
-    connection = IPConnection(hostname="localhost", port=4224)
+    connection = IPConnection(hostname="localhost")
     # connection = SerialConnection(tty="/dev/ttyACM0")  # Alternative serial connection
     device: PidController
     async with connection as device:

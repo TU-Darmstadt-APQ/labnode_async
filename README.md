@@ -21,7 +21,7 @@ pip install labnode-async
 This library makes use of asynchronous context managers to hide all connection related stuff and
 also handle cleanup. By the way: Context managers are great!
 
-Initialize the GPIB adapter
+Connect to the remote endpoint, and it will automatically enumerate the Labnode and create the correct device.
 ```python
 from labnode_async import IPConnection
 # Create a device and start coding
@@ -30,12 +30,12 @@ async with IPConnection("192.1680.0.2") as device:
     ...
 ```
 
-See [examples/](examples/) for more working examples.
+See [examples/](https://github.com/PatrickBaus/labnode_async/examples/) for more working examples.
 
 ## Versioning
 
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the
-[tags on this repository](https://github.com/PatrickBaus/labnode_async/tags).
+[tags of this repository](https://github.com/PatrickBaus/labnode_async/tags).
 
 ## Documentation
 The full documentation can be found here.
