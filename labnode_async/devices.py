@@ -16,13 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-"""All device and command specific constants are found here"""
+"""
+All device and command specific constants are found here. All setters are positive integers, while getters are negative.
+"""
 from enum import IntEnum, unique
 
 
 class FunctionID(IntEnum):
     """
-    These are the function calls supported by all Labnodes
+    These are the function calls supported by all Labnodes.
     """
 
     REQUEST_ID = 0
@@ -43,7 +45,7 @@ class FunctionID(IntEnum):
 @unique
 class PidFunctionID(IntEnum):
     """
-    These are the function calls supported by the Labnode PID controllers
+    These are the function calls supported by the Labnode PID controllers.
     """
 
     REQUEST_ID = 0
@@ -109,7 +111,7 @@ class PidFunctionID(IntEnum):
 @unique
 class ErrorCode(IntEnum):
     """
-    Error codes raised by Labnodes
+    Error codes raised by Labnodes.
     """
 
     INVALID_PARAMETER_TYPE = 248
@@ -124,7 +126,7 @@ class ErrorCode(IntEnum):
 @unique
 class DeviceIdentifier(IntEnum):
     """
-    The device codes used by all Labnodes to identify themselves
+    The device codes used by all Labnodes to identify themselves.
     """
 
     PID = 0

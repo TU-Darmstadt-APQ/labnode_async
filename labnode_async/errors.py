@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-"""All Labnode protocol exceptions can be found here"""
+"""Custom errors raised by Labnodes."""
 
 
 class LabnodeException(Exception):

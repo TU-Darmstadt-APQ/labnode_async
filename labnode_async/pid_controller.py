@@ -38,15 +38,15 @@ from .errors import (
 from .labnode import Labnode
 
 if TYPE_CHECKING:
-    from .ip_connection import IPConnection
+    from .connection import Connection
 
 
 @unique
 class FeedbackDirection(Enum):
     """
-    The sign of the feed action of the PID controller. A positive direction means, that a positive disturbance, causes
-    a positive output from the PID. A negative direction causes feedback in the opposing direction. This is the default
-    and should be selected for most systems.
+    The sign of the feedback action of the PID controller. A positive direction means, that a positive disturbance
+    causes a positive output from the PID. A negative direction causes feedback in the opposing direction. This is the
+    default and should be selected for most systems.
     """
 
     NEGATIVE = False
@@ -63,12 +63,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     @classmethod
     @property
     def device_identifier(cls) -> DeviceIdentifier:
-        """
-        Returns
-        -------
-        DeviceIdentifier
-            The device identifier used to identify the device type
-        """
+        """The device identifier used to identify the device type"""
         return cls.__DEVICE_IDENTIFIER
 
     _RAW_TO_UNIT: dict[PidFunctionID, Callable] = {
@@ -97,7 +92,17 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         PidFunctionID.GET_MAC_ADDRESS: bytearray,
     }
 
-    def __init__(self, connection: IPConnection, api_version: tuple[int, int, int]) -> None:
+    def __init__(self, connection: Connection, api_version: tuple[int, int, int]) -> None:
+        """
+        Create a pid controller. The API version is required to automatically adapt the different api versions.
+
+        Parameters
+        ----------
+        connection: Connection
+            Either an ethernet or a serial connection
+        api_version:
+            The api version as enumerated by the connection
+        """
         super().__init__(connection, api_version)
         self.__raw_to_unit: dict[PidFunctionID, Callable] = (
             PidController._RAW_TO_UNIT_11 if api_version >= (0, 11, 0) else PidController._RAW_TO_UNIT
@@ -408,7 +413,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def get_upper_output_limit(self) -> int:
         """
-        Get the maximum output of the DAC in bit values
+        Get the maximum output of the DAC in bit values.
 
         Returns
         -------
@@ -849,7 +854,7 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
 
     async def reset(self) -> None:
         """
-        Resets the device. This will trigger a hardware reset
+        Resets the device. This will trigger a hardware reset.
         """
         await self.__send_single_request(PidFunctionID.RESET)
 

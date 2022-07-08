@@ -43,15 +43,13 @@ class NotConnectedError(ConnectionError):
 
 
 class Connection:  # pylint: disable=too-many-instance-attributes
-    """The base connection used for all Labnode connections"""
+    """The base connection used for all Labnode connections."""
 
     _SEPARATOR = b"\x00"
 
     @property
     def timeout(self) -> float:
-        """
-        Returns the timeout for async operations in seconds
-        """
+        """The timeout in seconds for async operations."""
         return self.__timeout
 
     @timeout.setter
@@ -60,19 +58,12 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
     @property
     def is_connected(self) -> bool:
-        """
-        Returns *True* if the connection is established.
-        """
+        """*True* if the connection is established."""
         return self.__writer is not None and not self.__writer.is_closing()
 
     @property
     def endpoint(self) -> str:
-        """
-        Returns
-        -------
-        str
-            A string representation of the connection endpoint
-        """
+        """A string representation of the connection endpoint."""
         raise NotImplementedError
 
     def __init__(self, timeout: float = 2.5) -> None:
@@ -102,7 +93,8 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
     async def __aenter__(self) -> Labnode:
         """
-        Connect to the Labnode and automatically enumerate it
+        Connect to the Labnode and automatically enumerate it.
+
         Returns
         -------
         Labnode
@@ -119,6 +111,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
     def __encode_data(self, data: bytes) -> bytes:
         """
         Encode a bytestring using the COBS encoder.
+
         Parameters
         ----------
         data: bytes
@@ -133,7 +126,8 @@ class Connection:  # pylint: disable=too-many-instance-attributes
     @staticmethod
     def __decode_data(data: bytes) -> bytes:
         """
-        Decode the data using the COBS decoder
+        Decode the data using the COBS decoder.
+
         Parameters
         ----------
         data: bytes
@@ -149,6 +143,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
     async def get_device_id(self) -> tuple[DeviceIdentifier, tuple[int, int, int]]:
         """
         Query the Labnode for its device id and the version of its API implementation.
+
         Returns
         -------
         Tuple of DeviceIdentifier and tuple of int
@@ -172,7 +167,8 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
     async def _get_device(self) -> Labnode:
         """
-        Autodiscover the device by querying its id and then producing the corresponding device class
+        Autodiscover the device by querying its id and then producing the corresponding device class.
+
         Returns
         -------
         Labnode
@@ -181,7 +177,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
         device_id, api_version = await self.get_device_id()
         return device_factory.get(device_id, self, api_version=api_version)
 
-    async def connect(self):
+    async def connect(self) -> None:
         """
         Connect to the Labnode and start the connection listener.
         """
@@ -189,7 +185,8 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
     async def _connect(self, reader: StreamReader, writer: StreamWriter) -> None:
         """
-        Starts the data producer tasks when given the StreamReader/Writer
+        Starts the data producer tasks when given the StreamReader/Writer.
+
         Parameters
         ----------
         reader: StreamReader
@@ -205,7 +202,8 @@ class Connection:  # pylint: disable=too-many-instance-attributes
         self, data: dict[FunctionID | int, Any], response_expected: bool = False
     ) -> dict[int, Any] | None:
         """
-        Send a request to the Labnode
+        Send a request to the Labnode.
+
         Parameters
         ----------
         data: dict
@@ -257,7 +255,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
 
     async def __read_packets(self) -> AsyncIterator[dict[int, Any]]:
         """
-        Read data from the connection
+        Read data from the connection.
 
         Yields
         -------

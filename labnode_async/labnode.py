@@ -47,9 +47,12 @@ class Labnode(ABC):
     @property
     def api_version(self) -> tuple[int, int, int]:
         """
+        The API version used by the device to communicate. The style is
+        `semantic versioning <https://semver.org/spec/v2.0.0.html>`_.
+
         Returns
         -------
-        tuple
+        tuple of int
             The API version used by the device to communicate
         """
         return self.__api_version

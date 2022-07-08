@@ -29,22 +29,18 @@ from .devices import FunctionID
 
 class IPConnection(Connection):
     """
-    The ip connection is one of the two types of connections supported by the labnodes. See the`SerialConnection` for
-    the other option.
+    The ip connection is one of the two types of connections supported by the labnodes. See :class:`~SerialConnection`
+    for the other option.
     """
 
     @property
     def hostname(self) -> str:
-        """
-        Returns The hostname of the connection
-        """
+        """The hostname of the connection"""
         return self.__host[0]
 
     @property
     def port(self) -> int:
-        """
-        Returns The port used by the connection
-        """
+        """The port used by the connection"""
         return self.__host[1]
 
     @property
@@ -57,9 +53,9 @@ class IPConnection(Connection):
         Parameters
         ----------
         hostname: str
-            hostname of the connection
+            The hostname or IP of the ethernet endpoint
         port: int
-            port of the connection
+            port of the endpoint
         timeout: float
             the timeout in seconds used when making queries or connection attempts
         """
@@ -75,13 +71,16 @@ class IPConnection(Connection):
         self, data: dict[FunctionID | int, Any], response_expected: bool = False
     ) -> dict[int, Any] | None:
         """
-        Send a request to the Labnode
+        Send a request to the Labnode. The data is a dictionary with :class:`~FunctionID` keys and the appropriate
+        parameters as values.
+
         Parameters
         ----------
         data: dict
             The dictionary with the requests.
         response_expected: bool
             Must be true if this is a query or if an ACK is requested
+
         Returns
         -------
         dict
@@ -95,7 +94,8 @@ class IPConnection(Connection):
 
     async def connect(self) -> None:
         """
-        Connect to the Labnode using an ip connection and start the connection listener.
+        Connect to the Labnode using an ip connection and start the connection listener. If the context manager is not
+        used, call this function first. If the connection is already up, it will return immediately.
         """
         async with self._read_lock:
             if self.is_connected:

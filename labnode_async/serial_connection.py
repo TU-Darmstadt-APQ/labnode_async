@@ -30,31 +30,28 @@ from .devices import FunctionID
 
 class SerialConnection(Connection):
     """
-    The serial connection is one of the two types of connections supported by the labnodes. See the`IPConnection` for
-    the other option.
+    The serial connection is one of the two types of connections supported by the labnodes. See :class:`~IPConnection`
+    for the other option.
     """
 
     @property
     def tty(self) -> str:
         """
-        Returns The hostname of the connection
+        The serial endpoint of the connection
         """
         return self.__tty_kwargs["url"]
 
     @property
     def baudrate(self) -> int:
         """
-        Returns The port used by the connection
+        The baudrate of the serial connection
         """
         return self.__tty_kwargs["baudrate"]
 
     @property
     def endpoint(self) -> str:
         """
-        Returns
-        -------
-        str
-            A string representation of the connection endpoint
+        A string representation of the connection endpoint
         """
         return self.tty
 
