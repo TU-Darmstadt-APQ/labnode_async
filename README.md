@@ -14,7 +14,7 @@ To install the library in a virtual environment (always use venvs with every pro
 ```bash
 python3 -m venv env  # virtual environment, optional
 source env/bin/activate
-pip install labnode_async
+pip install labnode-async
 ```
 
 ## Usage
@@ -38,6 +38,8 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 [tags on this repository](https://github.com/PatrickBaus/labnode_async/tags).
 
 ## Documentation
+The full documentation can be found here.
+
 I use the [Numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) style for documentation and
 [Sphinx](https://www.sphinx-doc.org/en/master/index.html) for compiling it.
 
