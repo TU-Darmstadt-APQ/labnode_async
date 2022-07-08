@@ -38,7 +38,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "black", "build", "isort", "mypy", "pre-commit", "pylint", "pytest", "twine",
+    "black", "build", "isort", "mypy", "myst-parser", "pre-commit", "pylint", "pytest", "sphinx", "twine",
 ]
 
 test = [
