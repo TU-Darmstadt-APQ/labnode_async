@@ -16,7 +16,7 @@ jobs:
     - uses: PatrickBaus/sphinx-action@master
       with:
         docs-folder: "doc/"
-        pre-build-command: "pip install -e ."
+        pre-build-command: "pip install -e .[doc]"
     # Create an artifact of the html output.
     - uses: actions/upload-artifact@v1
       with:
