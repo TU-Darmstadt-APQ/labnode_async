@@ -8,6 +8,10 @@ This is the Python3 AsyncIO API library for the [Labnode](https://github.com/TU-
 
 The library is fully type-hinted.
 
+## Documentation
+The full documentation can be found on Github pages:
+[https://patrickbaus.github.io/labnode_async/](https://patrickbaus.github.io/labnode_async/).
+
 ## Setup
 To install the library in a virtual environment (always use venvs with every project):
 
@@ -36,9 +40,6 @@ See [examples/](https://github.com/PatrickBaus/labnode_async/examples/) for more
 
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the
 [tags of this repository](https://github.com/PatrickBaus/labnode_async/tags).
-
-## Documentation
-The full documentation can be found here.
 
 I use the [Numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) style for documentation and
 [Sphinx](https://www.sphinx-doc.org/en/master/index.html) for compiling it.
