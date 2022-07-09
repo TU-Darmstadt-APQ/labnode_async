@@ -6,24 +6,28 @@ on:
       - master
 
 jobs:
-  build:
-
+  build-documentation:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
     steps:
-    - uses: actions/checkout@v1
-    # Standard drop-in approach that should work for most people.
-    - uses: PatrickBaus/sphinx-action@master
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
       with:
-        docs-folder: "doc/"
-        pre-build-command: "pip install -e .[doc]"
-    # Create an artifact of the html output.
-    - uses: actions/upload-artifact@v1
-      with:
-        name: DocumentationHTML
-        path: doc/build/html/
-    # Publish built docs to gh-pages branch.
-    # ===============================
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies for testing
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install .[doc]
+    - name: Build documentation
+      working-directory: doc
+      run: |
+        make html
     - name: Commit documentation changes
       run: |
         git clone https://github.com/PatrickBaus/labnode_async.git --branch gh-pages --single-branch gh-pages
@@ -35,5 +39,4 @@ jobs:
         git commit -m "Update documentation" -a || true
         # The above command will fail if no changes were present, so we ignore
         # that.
-
-    # ===============================
+        git push

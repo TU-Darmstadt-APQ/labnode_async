@@ -50,4 +50,5 @@ I use the [Numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) styl
 ## License
 
 
-This project is licensed under the GPL v3 license - see the [LICENSE](LICENSE) file for details
+This project is licensed under the GPL v3 license - see the [LICENSE](https://github.com/PatrickBaus/LICENSE) file for
+details.
