@@ -28,11 +28,12 @@ jobs:
       working-directory: doc
       run: |
         make html
-    - name: Commit documentation changes
+    - name: Checkout gh-pages repository
       uses: actions/checkout@v3
       with:
         ref: gh-pages
         path: gh-pages
+    - name: Commit documentation changes
       run: |
         cp -r doc/build/html/* gh-pages/
         cd gh-pages
