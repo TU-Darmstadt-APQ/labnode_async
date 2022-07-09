@@ -38,7 +38,6 @@ async with IPConnection("192.1680.0.2") as device:
 See [examples/](https://github.com/PatrickBaus/labnode_async/examples/) for more working examples.
 
 ## Versioning
-
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the
 [tags of this repository](https://github.com/PatrickBaus/labnode_async/tags).
 
@@ -46,11 +45,8 @@ I use the [Numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) styl
 [Sphinx](https://www.sphinx-doc.org/en/master/index.html) for compiling it.
 
 ## Authors
-
 * **Patrick Baus** - *Initial work* - [PatrickBaus](https://github.com/PatrickBaus)
 
 ## License
-
-
 This project is licensed under the GPL v3 license - see the [LICENSE](https://github.com/PatrickBaus/LICENSE) file for
 details.
