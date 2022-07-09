@@ -75,6 +75,7 @@ pip install labnode-async
 also handle cleanup. By the way: Context managers are great!</p>
 <p>Connect to the remote endpoint, and it will automatically enumerate the Labnode and create the correct device.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">labnode_async</span> <span class="kn">import</span> <span class="n">IPConnection</span>
+
 <span class="c1"># Create a device and start coding</span>
 <span class="k">async</span> <span class="k">with</span> <span class="n">IPConnection</span><span class="p">(</span><span class="s2">&quot;192.1680.0.2&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">device</span><span class="p">:</span>
     <span class="c1"># Add your code here</span>
