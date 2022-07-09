@@ -28,6 +28,7 @@ also handle cleanup. By the way: Context managers are great!
 Connect to the remote endpoint, and it will automatically enumerate the Labnode and create the correct device.
 ```python
 from labnode_async import IPConnection
+
 # Create a device and start coding
 async with IPConnection("192.1680.0.2") as device:
     # Add your code here

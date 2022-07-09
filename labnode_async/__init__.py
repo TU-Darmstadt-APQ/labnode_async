@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The Python implementation for the Labnode API. It supports both  :class:`~IPConnection` and :class:`~SerialConnection`.
 """
