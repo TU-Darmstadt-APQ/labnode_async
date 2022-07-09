@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Home Automation",
     "Topic :: Scientific/Engineering",
 ]
-keywords = ["HP3478A", "GPIB", "API"]
+keywords = ["IoT", "PID", "PID controller", "API"]
 dependencies = [
     "typing-extensions; python_version <'3.11'",
     "cbor2",
