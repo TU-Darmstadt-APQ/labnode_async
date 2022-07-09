@@ -9,7 +9,7 @@ This is the Python3 AsyncIO API library for the [Labnode](https://github.com/TU-
 The library is fully type-hinted.
 
 ## Documentation
-The full documentation can be found on Github pages:
+The full documentation can be found on GitHub Pages:
 [https://patrickbaus.github.io/labnode_async/](https://patrickbaus.github.io/labnode_async/).
 
 ## Setup
