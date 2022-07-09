@@ -39,4 +39,7 @@ jobs:
         git commit -m "Update documentation" -a || true
         # The above command will fail if no changes were present, so we ignore
         # that.
+    - name: Push changes
+      working-directory: gh-pages
+      run: |
         git push
