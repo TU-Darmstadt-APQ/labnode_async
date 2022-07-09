@@ -29,6 +29,8 @@ jobs:
       run: |
         make html
     - name: Commit documentation changes
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git clone https://github.com/PatrickBaus/labnode_async.git --branch gh-pages --single-branch gh-pages
         cp -r doc/build/html/* gh-pages/
