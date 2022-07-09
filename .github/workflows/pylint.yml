@@ -22,7 +22,7 @@ jobs:
         python-version: ["3.10"]
 
     steps:
-    - name: Checkout repository
+    - name: Checkout source repository
       uses: actions/checkout@v3
     - name: Set up python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -32,7 +32,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install .[test]
-    - name: pylint
+    - name: Run Pylint
       run: |
         # stop the build if there are Python syntax errors or undefined names
         pylint --reports n labnode_async
