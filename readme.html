@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Readme &#8212; labnode_async v0.14.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Module Documentation" href="modules.html" />
+    <link rel="prev" title="Home" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="Module Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Home"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.14.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Readme</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="readme">
+<h1>Readme<a class="headerlink" href="#readme" title="Permalink to this heading">¶</a></h1>
+<p><a class="reference external" href="https://github.com/PatrickBaus/labnode_async/actions/workflows/pylint.yml"><img alt="pylint" src="https://github.com/PatrickBaus/labnode_async/actions/workflows/pylint.yml/badge.svg" /></a>
+<a class="reference external" href="https://pypi.org/project/labnode_async/"><img alt="PyPI" src="https://img.shields.io/pypi/v/labnode_async" /></a>
+<img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/labnode_async" />
+<img alt="PyPI - Status" src="https://img.shields.io/pypi/status/labnode_async" />
+<a class="reference external" href="https://github.com/psf/black"><img alt="code style" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a></p>
+<section id="labnode">
+<h2>LabNode<a class="headerlink" href="#labnode" title="Permalink to this heading">¶</a></h2>
+<p>This is the Python3 AsyncIO API library for the <a class="reference external" href="https://github.com/TU-Darmstadt-APQ/Labnode_PID">Labnode</a> system.</p>
+<p>The library is fully type-hinted.</p>
+<section id="setup">
+<h3>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h3>
+<p>To install the library in a virtual environment (always use venvs with every project):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m venv env  <span class="c1"># virtual environment, optional</span>
+<span class="nb">source</span> env/bin/activate
+pip install labnode-async
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h3>
+<p>This library makes use of asynchronous context managers to hide all connection related stuff and
+also handle cleanup. By the way: Context managers are great!</p>
+<p>Connect to the remote endpoint, and it will automatically enumerate the Labnode and create the correct device.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">labnode_async</span> <span class="kn">import</span> <span class="n">IPConnection</span>
+<span class="c1"># Create a device and start coding</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">IPConnection</span><span class="p">(</span><span class="s2">&quot;192.1680.0.2&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">device</span><span class="p">:</span>
+    <span class="c1"># Add your code here</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://github.com/PatrickBaus/labnode_async/examples/">examples/</a> for more working examples.</p>
+</section>
+<section id="versioning">
+<h3>Versioning<a class="headerlink" href="#versioning" title="Permalink to this heading">¶</a></h3>
+<p>I use <a class="reference external" href="http://semver.org/">SemVer</a> for versioning. For the versions available, see the
+<a class="reference external" href="https://github.com/PatrickBaus/labnode_async/tags">tags of this repository</a>.</p>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading">¶</a></h3>
+<p>The full documentation can be found here.</p>
+<p>I use the <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpydoc</a> style for documentation and
+<a class="reference external" href="https://www.sphinx-doc.org/en/master/index.html">Sphinx</a> for compiling it.</p>
+</section>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Patrick Baus</strong> - <em>Initial work</em> - <a class="reference external" href="https://github.com/PatrickBaus">PatrickBaus</a></p></li>
+</ul>
+</section>
+<section id="license">
+<h3>License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h3>
+<p>This project is licensed under the GPL v3 license - see the <a class="reference external" href="https://github.com/PatrickBaus/LICENSE">LICENSE</a> file for
+details.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Readme</a><ul>
+<li><a class="reference internal" href="#labnode">LabNode</a><ul>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#versioning">Versioning</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Home</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="modules.html"
+                          title="next chapter">Module Documentation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/readme.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="Module Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Home"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.14.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Readme</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Patrick Baus.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

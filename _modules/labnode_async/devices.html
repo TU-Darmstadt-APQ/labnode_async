@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>labnode_async.devices &#8212; labnode_async v0.14.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.14.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">labnode_async.devices</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for labnode_async.devices</h1><div class="highlight"><pre>
+<span></span><span class="c1"># ##### BEGIN GPL LICENSE BLOCK #####</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2022  Patrick Baus</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1"># ##### END GPL LICENSE BLOCK #####</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">All device and command specific constants are found here. All setters are positive integers, while getters are negative.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span><span class="p">,</span> <span class="n">unique</span>
+
+
+<div class="viewcode-block" id="FunctionID"><a class="viewcode-back" href="../../modules.html#labnode_async.FunctionID">[docs]</a><span class="k">class</span> <span class="nc">FunctionID</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    These are the function calls supported by all Labnodes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">REQUEST_ID</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">SET_SERIAL_NUMBER</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">RESET</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">RESET_SETTINGS</span> <span class="o">=</span> <span class="mi">31</span>
+
+    <span class="n">GET_ACTIVE_CONNECTION_COUNT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">28</span>
+    <span class="n">GET_DEVICE_TYPE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">29</span>
+    <span class="n">GET_SOFTWARE_VERSION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span>
+    <span class="n">GET_HARDWARE_VERSION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">31</span>
+    <span class="n">GET_API_VERSION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32</span>
+
+    <span class="n">INVALID_FORMAT</span> <span class="o">=</span> <span class="mi">251</span></div>
+
+
+<span class="c1"># We use IntEnum, because those can be easily serialized using the standard CBOR converter</span>
+<div class="viewcode-block" id="PidFunctionID"><a class="viewcode-back" href="../../modules.html#labnode_async.PidFunctionID">[docs]</a><span class="nd">@unique</span>
+<span class="k">class</span> <span class="nc">PidFunctionID</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    These are the function calls supported by the Labnode PID controllers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">REQUEST_ID</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">SET_INPUT</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">SET_KP</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">SET_KI</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">SET_KD</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">SET_LOWER_OUTPUT_LIMIT</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">SET_UPPER_OUTPUT_LIMIT</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">SET_ENABLED</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">SET_TIMEOUT</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">SET_DIRECTION</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">SET_SETPOINT</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">SET_OUTPUT</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">SET_SERIAL_NUMBER</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">SET_GAIN</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">SET_SECONDARY_SETPOINT</span> <span class="o">=</span> <span class="mi">14</span>
+    <span class="n">SET_MAC_ADDRESS</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">SET_AUTO_RESUME</span> <span class="o">=</span> <span class="mi">16</span>
+    <span class="n">SET_FALLBACK_UPDATE_INTERVAL</span> <span class="o">=</span> <span class="mi">17</span>
+    <span class="n">SET_SECONDARY_KP</span> <span class="o">=</span> <span class="mi">18</span>
+    <span class="n">SET_SECONDARY_KI</span> <span class="o">=</span> <span class="mi">19</span>
+    <span class="n">SET_SECONDARY_KD</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">SET_SECONDARY_PID_PARAMETER_SET</span> <span class="o">=</span> <span class="mi">21</span>
+    <span class="n">SET_UUID</span> <span class="o">=</span> <span class="mi">24</span>
+    <span class="n">RESET</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">RESET_SETTINGS</span> <span class="o">=</span> <span class="mi">31</span>
+
+    <span class="n">GET_INPUT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">GET_KP</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+    <span class="n">GET_KI</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span>
+    <span class="n">GET_KD</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
+    <span class="n">GET_LOWER_OUTPUT_LIMIT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span>
+    <span class="n">GET_UPPER_OUTPUT_LIMIT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">6</span>
+    <span class="n">GET_ENABLED</span> <span class="o">=</span> <span class="o">-</span><span class="mi">7</span>
+    <span class="n">GET_TIMEOUT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">8</span>
+    <span class="n">GET_DIRECTION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">9</span>
+    <span class="n">GET_SETPOINT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+    <span class="n">GET_OUTPUT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">11</span>
+    <span class="n">GET_SERIAL_NUMBER</span> <span class="o">=</span> <span class="o">-</span><span class="mi">12</span>
+    <span class="n">GET_GAIN</span> <span class="o">=</span> <span class="o">-</span><span class="mi">13</span>
+    <span class="n">GET_SECONDARY_SETPOINT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">14</span>
+    <span class="n">GET_MAC_ADDRESS</span> <span class="o">=</span> <span class="o">-</span><span class="mi">15</span>
+    <span class="n">GET_AUTO_RESUME</span> <span class="o">=</span> <span class="o">-</span><span class="mi">16</span>
+    <span class="n">GET_FALLBACK_UPDATE_INTERVAL</span> <span class="o">=</span> <span class="o">-</span><span class="mi">17</span>
+    <span class="n">GET_SECONDARY_KP</span> <span class="o">=</span> <span class="o">-</span><span class="mi">18</span>
+    <span class="n">GET_SECONDARY_KI</span> <span class="o">=</span> <span class="o">-</span><span class="mi">19</span>
+    <span class="n">GET_SECONDARY_KD</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span>
+    <span class="n">GET_SECONDARY_PID_PARAMETER_SET</span> <span class="o">=</span> <span class="o">-</span><span class="mi">21</span>
+    <span class="n">GET_UUID</span> <span class="o">=</span> <span class="o">-</span><span class="mi">24</span>
+    <span class="n">GET_BOARD_TEMPERATURE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">25</span>
+    <span class="n">GET_HUMIDITY</span> <span class="o">=</span> <span class="o">-</span><span class="mi">26</span>
+    <span class="n">CALLBACK_UPDATE_VALUE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">27</span>
+    <span class="n">GET_ACTIVE_CONNECTION_COUNT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">28</span>
+    <span class="n">GET_DEVICE_TYPE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">29</span>
+    <span class="n">GET_SOFTWARE_VERSION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span>
+    <span class="n">GET_HARDWARE_VERSION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">31</span>
+    <span class="n">GET_API_VERSION</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32</span>
+
+    <span class="n">INVALID_FORMAT</span> <span class="o">=</span> <span class="mi">251</span></div>
+
+
+<span class="nd">@unique</span>
+<span class="k">class</span> <span class="nc">ErrorCode</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Error codes raised by Labnodes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">INVALID_PARAMETER_TYPE</span> <span class="o">=</span> <span class="mi">248</span>
+    <span class="n">ACK</span> <span class="o">=</span> <span class="mi">249</span>
+    <span class="n">INVALID_MODE</span> <span class="o">=</span> <span class="mi">250</span>
+    <span class="n">INVALID_COMMAND</span> <span class="o">=</span> <span class="mi">252</span>
+    <span class="n">NOT_INITIALIZED</span> <span class="o">=</span> <span class="mi">253</span>
+    <span class="n">NOT_IMPLEMENTED</span> <span class="o">=</span> <span class="mi">254</span>
+    <span class="n">DEPRECATED</span> <span class="o">=</span> <span class="mi">255</span>
+
+
+<div class="viewcode-block" id="DeviceIdentifier"><a class="viewcode-back" href="../../modules.html#labnode_async.DeviceIdentifier">[docs]</a><span class="nd">@unique</span>
+<span class="k">class</span> <span class="nc">DeviceIdentifier</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The device codes used by all Labnodes to identify themselves.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">PID</span> <span class="o">=</span> <span class="mi">0</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.14.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">labnode_async.devices</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Patrick Baus.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>
