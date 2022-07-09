@@ -48,7 +48,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        # git commit returns an error, if there are not updates, but this is ok
+        # git commit returns an error if there are not updates, but this is ok
         git commit -m "Update documentation" -a || true
     - name: Push documentation changes
       working-directory: gh-pages
