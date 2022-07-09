@@ -32,9 +32,9 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://github.com/PatrickBaus/LabNode"
-"Bug Tracker" = "https://github.com/PatrickBaus/LabNode/issues"
-"Download" = "https://github.com/PatrickBaus/LabNode/releases"
+"Homepage" = "https://github.com/PatrickBaus/labnode_async"
+"Bug Tracker" = "https://github.com/PatrickBaus/labnode_async/issues"
+"Download" = "https://github.com/PatrickBaus/labnode_async/releases"
 
 [project.optional-dependencies]
 dev = [
