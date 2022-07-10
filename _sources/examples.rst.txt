@@ -1,6 +1,6 @@
 Examples
 ========
-The Labnodes are about to enumerate and identify themselves. It is therefore not necessary the Labnode class in advance.
+The Labnodes are can enumerate and identify themselves. It is therefore not necessary to know the Labnode class in advance.
 The connection takes care of enumerating the Labnode and returns the correct Labnode object.
 
 See the basic example below for an implementation:
