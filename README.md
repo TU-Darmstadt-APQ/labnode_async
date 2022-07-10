@@ -37,7 +37,7 @@ async with IPConnection("192.1680.0.2") as device:
     ...
 ```
 
-See [examples/](https://github.com/PatrickBaus/labnode_async/examples/) for more working examples.
+See [examples/](https://github.com/PatrickBaus/labnode_async/blob/master/examples/) for more working examples.
 
 ## Versioning
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the
@@ -48,4 +48,4 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 
 ## License
 This project is licensed under the GPL v3 license - see the
-[LICENSE](https://github.com/labnode_async/PatrickBaus/LICENSE) file for details.
+[LICENSE](https://github.com/PatrickBaus/labnode_async/blob/master/LICENSE) file for details.
