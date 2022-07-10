@@ -10,7 +10,9 @@ The library is fully type-hinted.
 
 ## Documentation
 The full documentation can be found on GitHub Pages:
-[https://patrickbaus.github.io/labnode_async/](https://patrickbaus.github.io/labnode_async/).
+[https://patrickbaus.github.io/labnode_async/](https://patrickbaus.github.io/labnode_async/). I use the
+[Numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) style for documentation and
+[Sphinx](https://www.sphinx-doc.org/en/master/index.html) for compiling it.
 
 ## Setup
 To install the library in a virtual environment (always use venvs with every project):
@@ -41,12 +43,9 @@ See [examples/](https://github.com/PatrickBaus/labnode_async/examples/) for more
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the
 [tags of this repository](https://github.com/PatrickBaus/labnode_async/tags).
 
-I use the [Numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) style for documentation and
-[Sphinx](https://www.sphinx-doc.org/en/master/index.html) for compiling it.
-
 ## Authors
 * **Patrick Baus** - *Initial work* - [PatrickBaus](https://github.com/PatrickBaus)
 
 ## License
-This project is licensed under the GPL v3 license - see the [LICENSE](https://github.com/PatrickBaus/LICENSE) file for
-details.
+This project is licensed under the GPL v3 license - see the
+[LICENSE](https://github.com/labnode_async/PatrickBaus/LICENSE) file for details.
