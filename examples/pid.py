@@ -65,7 +65,7 @@ async def main():
             # await device.set_enabled(False)
             # await device.set_output(1200)
             # await device.set_enabled(True)
-            # await device.set_fallback_update_interval(1)
+            # await device.set_secondary_pid_update_interval(1)
             # Secondary PID
             # await device.set_kp(0.8*200 * 165 / 2**16 * 2**20, config_id=1)
             # await device.set_ki(0.8*1.5 * 165 / 2**16 * 2**20, config_id=1)
@@ -88,8 +88,8 @@ async def main():
             print(f"MAC Address: {hexlify(await device.get_mac_address(),':').decode('utf-8').upper()}")
             print(f"Controller is enabled: {await device.is_enabled()}")
             print(f"Controller resumes automatically: {await device.get_auto_resume()}")
-            print(f"Controller times out after: {await device.get_timeout()} ms")
-            print(f"Fallback update interval: {await device.get_fallback_update_interval()} ms")
+            print(f"Controller times out after: {await device.get_timeout()} s")
+            print(f"Fallback update interval: {await device.get_secondary_pid_update_interval()} s")
             k_p, k_i, k_d = await asyncio.gather(device.get_kp(), device.get_ki(), device.get_kd())
             print(f"PID Kp, Ki, Kd: {(k_p/165*2**16/2**20, k_i/165*2**16/2**20, k_d/165*2**16/2**20)}")
             k_p, k_i, k_d = await asyncio.gather(

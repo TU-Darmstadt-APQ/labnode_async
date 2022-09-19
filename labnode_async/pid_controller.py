@@ -825,10 +825,10 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             )
         return await self.get_by_function_id(PidFunctionID.GET_SECONDARY_PID_PARAMETER_SET)
 
-    async def set_fallback_update_interval(self, value: float):
+    async def set_secondary_pid_update_interval(self, value: float):
         """
-        Set the update interval, when running in fallback mode. The Controller will feed a value from the internal
-        sensor to its PID controller every {value} s.
+        Set the update interval, when running in fallback mode using the secondary PID settings.
+        The Controller will feed a value from the internal sensor to the secondary PID controller every {value} s.
 
         Parameters
         ----------
@@ -837,11 +837,11 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         assert value > 0
         try:
-            await self.__send_single_request(PidFunctionID.SET_FALLBACK_UPDATE_INTERVAL, int(value / 1000))
+            await self.__send_single_request(PidFunctionID.SET_FALLBACK_UPDATE_INTERVAL, int(value * 1000))
         except InvalidFormatError:
             raise ValueError("Invalid calibration offset") from None
 
-    async def get_fallback_update_interval(self) -> float:
+    async def get_secondary_pid_update_interval(self) -> float:
         """
         The update interval, which is used when running in fallback mode. The return value is in seconds.
 
