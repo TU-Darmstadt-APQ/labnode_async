@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Examples &#8212; labnode_async v0.15.2 documentation</title>
+    <title>Examples &#8212; labnode_async v0.16.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -30,7 +30,7 @@
         <li class="right" >
           <a href="modules.html" title="Module Documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.15.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Examples</a></li> 
       </ul>
     </div>  
@@ -57,7 +57,7 @@ The connection takes care of enumerating the Labnode and returns the correct Lab
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Connect to the labnode and run the example.&quot;&quot;&quot;</span>
     <span class="n">connection</span> <span class="o">=</span> <span class="n">IPConnection</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
-    <span class="c1"># connection = SerialConnection(tty=&quot;/dev/ttyACM0&quot;)  # Alternative serial connection</span>
+    <span class="c1"># connection = SerialConnection(url=&quot;/dev/ttyACM0&quot;)  # Alternative serial connection</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">PidController</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">connection</span> <span class="k">as</span> <span class="n">device</span><span class="p">:</span>
         <span class="c1"># Test getters</span>
@@ -135,13 +135,13 @@ The connection takes care of enumerating the Labnode and returns the correct Lab
         <li class="right" >
           <a href="modules.html" title="Module Documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.15.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Examples</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2022, Patrick Baus.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

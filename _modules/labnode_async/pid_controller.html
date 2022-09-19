@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>labnode_async.pid_controller &#8212; labnode_async v0.15.2 documentation</title>
+    <title>labnode_async.pid_controller &#8212; labnode_async v0.16.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.15.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.pid_controller</a></li> 
       </ul>
@@ -291,24 +291,24 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SERIAL_NUMBER</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_device_temperature"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_device_temperature">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_device_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="PidController.get_device_temperature"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_device_temperature">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_device_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decimal</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query the temperature of the onboard sensor.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        float</span>
+<span class="sd">        Decimal</span>
 <span class="sd">            The temperature of the onboard sensor in Kelvin</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_BOARD_TEMPERATURE</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_humidity"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_humidity">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_humidity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="PidController.get_humidity"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_humidity">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_humidity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decimal</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the humidity as read by the onboard sensor.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        float</span>
+<span class="sd">        Decimal</span>
 <span class="sd">            The humidity in %rH</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_HUMIDITY</span><span class="p">)</span></div>
@@ -461,28 +461,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_UPPER_OUTPUT_LIMIT</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_timeout"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_timeout">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="PidController.set_timeout"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_timeout">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the timeout, that defines when the controller switches to fallback mode. The time is in ms.</span>
+<span class="sd">        Set the timeout, that defines when the controller switches to fallback mode. The time is measured in s.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        timeout</span>
-<span class="sd">            The timeout in ms</span>
+<span class="sd">            The timeout in seconds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">timeout</span> <span class="o">&gt;</span> <span class="mi">0</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_TIMEOUT</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">timeout</span><span class="p">))</span></div>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_TIMEOUT</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">timeout</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.get_timeout"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_timeout">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="PidController.get_timeout"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_timeout">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the time, that mass pass between updates, before the controller switches to fallback mode.</span>
+<span class="sd">        Get the time, that must pass between updates, before the controller switches to fallback mode.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        int</span>
-<span class="sd">            The time in ms, that the controller waits between updates</span>
+<span class="sd">        float</span>
+<span class="sd">            The time in seconds, that the controller waits between updates</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_TIMEOUT</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_TIMEOUT</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span></div>
 
 <div class="viewcode-block" id="PidController.set_dac_gain"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_dac_gain">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_dac_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -864,32 +864,32 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_PID_PARAMETER_SET</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_fallback_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_fallback_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_fallback_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="PidController.set_fallback_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_fallback_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_fallback_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the update interval, when running in fallback mode. The Controller will feed a value from the internal</span>
-<span class="sd">        sensor to its PID controller every {value} ms.</span>
+<span class="sd">        sensor to its PID controller every {value} s.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        value: int</span>
-<span class="sd">            The update interval in ms</span>
+<span class="sd">            The update interval in seconds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_FALLBACK_UPDATE_INTERVAL</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_FALLBACK_UPDATE_INTERVAL</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid calibration offset&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_fallback_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_fallback_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_fallback_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="PidController.get_fallback_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_fallback_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_fallback_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The update interval, which is used when running in fallback mode. The return value is in ms.</span>
+<span class="sd">        The update interval, which is used when running in fallback mode. The return value is in seconds.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        int:</span>
-<span class="sd">            The number of ms between updates with the backup sensor when running in fallback mode.</span>
+<span class="sd">        float:</span>
+<span class="sd">            The number of seconds between updates with the backup sensor when running in fallback mode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_FALLBACK_UPDATE_INTERVAL</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_FALLBACK_UPDATE_INTERVAL</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span></div>
 
 <div class="viewcode-block" id="PidController.reset"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1001,14 +1001,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.15.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.pid_controller</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2022, Patrick Baus.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>
