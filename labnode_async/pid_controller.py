@@ -252,24 +252,24 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         return await self.get_by_function_id(PidFunctionID.GET_SERIAL_NUMBER)
 
-    async def get_device_temperature(self) -> float:
+    async def get_device_temperature(self) -> Decimal:
         """
         Query the temperature of the onboard sensor.
 
         Returns
         -------
-        float
+        Decimal
             The temperature of the onboard sensor in Kelvin
         """
         return await self.get_by_function_id(PidFunctionID.GET_BOARD_TEMPERATURE)
 
-    async def get_humidity(self) -> float:
+    async def get_humidity(self) -> Decimal:
         """
         Returns the humidity as read by the onboard sensor.
 
         Returns
         -------
-        float
+        Decimal
             The humidity in %rH
         """
         return await self.get_by_function_id(PidFunctionID.GET_HUMIDITY)
@@ -422,28 +422,28 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
         """
         return await self.get_by_function_id(PidFunctionID.GET_UPPER_OUTPUT_LIMIT)
 
-    async def set_timeout(self, timeout: int) -> None:
+    async def set_timeout(self, timeout: float) -> None:
         """
-        Set the timeout, that defines when the controller switches to fallback mode. The time is in ms.
+        Set the timeout, that defines when the controller switches to fallback mode. The time is measured in s.
 
         Parameters
         ----------
         timeout
-            The timeout in ms
+            The timeout in seconds
         """
         assert timeout > 0
-        await self.__send_single_request(PidFunctionID.SET_TIMEOUT, int(timeout))
+        await self.__send_single_request(PidFunctionID.SET_TIMEOUT, int(timeout * 1000))
 
-    async def get_timeout(self) -> int:
+    async def get_timeout(self) -> float:
         """
-        Get the time, that mass pass between updates, before the controller switches to fallback mode.
+        Get the time, that must pass between updates, before the controller switches to fallback mode.
 
         Returns
         -------
-        int
-            The time in ms, that the controller waits between updates
+        float
+            The time in seconds, that the controller waits between updates
         """
-        return await self.get_by_function_id(PidFunctionID.GET_TIMEOUT)
+        return (await self.get_by_function_id(PidFunctionID.GET_TIMEOUT)) / 1000
 
     async def set_dac_gain(self, enable: bool) -> None:
         """
@@ -825,32 +825,32 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
             )
         return await self.get_by_function_id(PidFunctionID.GET_SECONDARY_PID_PARAMETER_SET)
 
-    async def set_fallback_update_interval(self, value: int):
+    async def set_fallback_update_interval(self, value: float):
         """
         Set the update interval, when running in fallback mode. The Controller will feed a value from the internal
-        sensor to its PID controller every {value} ms.
+        sensor to its PID controller every {value} s.
 
         Parameters
         ----------
         value: int
-            The update interval in ms
+            The update interval in seconds
         """
         assert value > 0
         try:
-            await self.__send_single_request(PidFunctionID.SET_FALLBACK_UPDATE_INTERVAL, int(value))
+            await self.__send_single_request(PidFunctionID.SET_FALLBACK_UPDATE_INTERVAL, int(value / 1000))
         except InvalidFormatError:
             raise ValueError("Invalid calibration offset") from None
 
-    async def get_fallback_update_interval(self) -> int:
+    async def get_fallback_update_interval(self) -> float:
         """
-        The update interval, which is used when running in fallback mode. The return value is in ms.
+        The update interval, which is used when running in fallback mode. The return value is in seconds.
 
         Returns
         -------
-        int:
-            The number of ms between updates with the backup sensor when running in fallback mode.
+        float:
+            The number of seconds between updates with the backup sensor when running in fallback mode.
         """
-        return await self.get_by_function_id(PidFunctionID.GET_FALLBACK_UPDATE_INTERVAL)
+        return (await self.get_by_function_id(PidFunctionID.GET_FALLBACK_UPDATE_INTERVAL)) / 1000
 
     async def reset(self) -> None:
         """

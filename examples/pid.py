@@ -23,6 +23,7 @@ import logging
 import uuid  # pylint: disable=unused-import
 import warnings
 from binascii import hexlify  # To print the MAC address
+from decimal import Decimal
 
 from labnode_async import (  # pylint: disable=unused-import
     FeedbackDirection,
@@ -35,8 +36,9 @@ from labnode_async import (  # pylint: disable=unused-import
 async def main():
     """Connect to the labnode and run the example."""
     try:
-        connection = IPConnection(hostname="localhost", port=4224)
-        # connection = SerialConnection(tty="/dev/ttyACM0")  # Alternative serial connection
+        connection = IPConnection(hostname="localhost", port=4223)
+        # connection = SerialConnection(url="/dev/ttyACM0")  # Alternative serial connection
+        device: PidController
         async with connection as device:
             # Test setters
             # await device.set_serial(1)
@@ -56,14 +58,14 @@ async def main():
             # await device.set_mac_address([0x00, 0xAA, 0xBB, 0xCC, 0xDE, 0x09])
             # await device.set_lower_output_limit(0)
             # await device.set_upper_output_limit(4095)
-            # await device.set_timeout(1000)
+            # await device.set_timeout(1)
             # await device.set_dac_gain(False)
             # await device.set_pid_feedback_direction(FeedbackDirection.NEGATIVE)
             # await device.set_auto_resume(True)
             # await device.set_enabled(False)
             # await device.set_output(1200)
             # await device.set_enabled(True)
-            # await device.set_fallback_update_interval(1000)
+            # await device.set_fallback_update_interval(1)
             # Secondary PID
             # await device.set_kp(0.8*200 * 165 / 2**16 * 2**20, config_id=1)
             # await device.set_ki(0.8*1.5 * 165 / 2**16 * 2**20, config_id=1)
@@ -81,16 +83,16 @@ async def main():
             print(f"Controller UUID: {await device.get_uuid()}")
             # print(f"Humidity: {await device.get_humidity()} %rH")
             device_temperature = await device.get_device_temperature()
-            print(f"Device temperature: {device_temperature} K ({device_temperature - 273.15} °C)")
+            print(f"Device temperature: {device_temperature} K ({device_temperature - Decimal('273.15')} °C)")
             # print(f"Humidity: {await device.get_humidity():.2f} %rH")
             print(f"MAC Address: {hexlify(await device.get_mac_address(),':').decode('utf-8').upper()}")
             print(f"Controller is enabled: {await device.is_enabled()}")
             print(f"Controller resumes automatically: {await device.get_auto_resume()}")
             print(f"Controller times out after: {await device.get_timeout()} ms")
             print(f"Fallback update interval: {await device.get_fallback_update_interval()} ms")
-            k_p, k_i, k_d = asyncio.gather(device.get_kp(), device.get_ki(), device.get_kd())
+            k_p, k_i, k_d = await asyncio.gather(device.get_kp(), device.get_ki(), device.get_kd())
             print(f"PID Kp, Ki, Kd: {(k_p/165*2**16/2**20, k_i/165*2**16/2**20, k_d/165*2**16/2**20)}")
-            k_p, k_i, k_d = asyncio.gather(
+            k_p, k_i, k_d = await asyncio.gather(
                 device.get_kp(config_id=1), device.get_ki(config_id=1), device.get_kd(config_id=1)
             )
             print(f"Secondary PID Kp, Ki, Kd: {(k_p/165*2**16/2**20, k_i/165*2**16/2**20, k_d/165*2**16/2**20)}")
