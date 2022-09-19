@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; labnode_async v0.16.0 documentation</title>
+    <title>Index &#8212; labnode_async v0.16.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -184,8 +184,6 @@
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_FALLBACK_UPDATE_INTERVAL">GET_FALLBACK_UPDATE_INTERVAL (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
-      <li><a href="modules.html#labnode_async.PidController.get_fallback_update_interval">get_fallback_update_interval() (labnode_async.PidController method)</a>
-</li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_GAIN">GET_GAIN (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.FunctionID.GET_HARDWARE_VERSION">GET_HARDWARE_VERSION (labnode_async.devices.FunctionID attribute)</a>
@@ -210,10 +208,10 @@
 </li>
       <li><a href="modules.html#labnode_async.PidController.get_ki">get_ki() (labnode_async.PidController method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_KP">GET_KP (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#labnode_async.PidController.get_kp">get_kp() (labnode_async.PidController method)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_LOWER_OUTPUT_LIMIT">GET_LOWER_OUTPUT_LIMIT (labnode_async.devices.PidFunctionID attribute)</a>
@@ -239,6 +237,8 @@
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_SECONDARY_KP">GET_SECONDARY_KP (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_SECONDARY_PID_PARAMETER_SET">GET_SECONDARY_PID_PARAMETER_SET (labnode_async.devices.PidFunctionID attribute)</a>
+</li>
+      <li><a href="modules.html#labnode_async.PidController.get_secondary_pid_update_interval">get_secondary_pid_update_interval() (labnode_async.PidController method)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.GET_SECONDARY_SETPOINT">GET_SECONDARY_SETPOINT (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
@@ -446,8 +446,6 @@
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_FALLBACK_UPDATE_INTERVAL">SET_FALLBACK_UPDATE_INTERVAL (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
-      <li><a href="modules.html#labnode_async.PidController.set_fallback_update_interval">set_fallback_update_interval() (labnode_async.PidController method)</a>
-</li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_GAIN">SET_GAIN (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_INPUT">SET_INPUT (labnode_async.devices.PidFunctionID attribute)</a>
@@ -468,10 +466,10 @@
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_LOWER_OUTPUT_LIMIT">SET_LOWER_OUTPUT_LIMIT (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#labnode_async.PidController.set_lower_output_limit">set_lower_output_limit() (labnode_async.PidController method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_MAC_ADDRESS">SET_MAC_ADDRESS (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
       <li><a href="modules.html#labnode_async.PidController.set_mac_address">set_mac_address() (labnode_async.PidController method)</a>
@@ -491,6 +489,8 @@
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_SECONDARY_KP">SET_SECONDARY_KP (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_SECONDARY_PID_PARAMETER_SET">SET_SECONDARY_PID_PARAMETER_SET (labnode_async.devices.PidFunctionID attribute)</a>
+</li>
+      <li><a href="modules.html#labnode_async.PidController.set_secondary_pid_update_interval">set_secondary_pid_update_interval() (labnode_async.PidController method)</a>
 </li>
       <li><a href="modules.html#labnode_async.devices.PidFunctionID.SET_SECONDARY_SETPOINT">SET_SECONDARY_SETPOINT (labnode_async.devices.PidFunctionID attribute)</a>
 </li>
@@ -564,7 +564,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>

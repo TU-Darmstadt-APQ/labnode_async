@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>labnode_async.pid_controller &#8212; labnode_async v0.16.0 documentation</title>
+    <title>labnode_async.pid_controller &#8212; labnode_async v0.16.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.pid_controller</a></li> 
       </ul>
@@ -864,10 +864,10 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_PID_PARAMETER_SET</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_fallback_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_fallback_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_fallback_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<div class="viewcode-block" id="PidController.set_secondary_pid_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_secondary_pid_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_secondary_pid_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the update interval, when running in fallback mode. The Controller will feed a value from the internal</span>
-<span class="sd">        sensor to its PID controller every {value} s.</span>
+<span class="sd">        Set the update interval, when running in fallback mode using the secondary PID settings.</span>
+<span class="sd">        The Controller will feed a value from the internal sensor to the secondary PID controller every {value} s.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -876,11 +876,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_FALLBACK_UPDATE_INTERVAL</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_FALLBACK_UPDATE_INTERVAL</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid calibration offset&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_fallback_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_fallback_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_fallback_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="PidController.get_secondary_pid_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_secondary_pid_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_secondary_pid_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The update interval, which is used when running in fallback mode. The return value is in seconds.</span>
 
@@ -1001,7 +1001,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.pid_controller</a></li> 
       </ul>

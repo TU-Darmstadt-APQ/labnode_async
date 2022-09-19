@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Module Documentation &#8212; labnode_async v0.16.0 documentation</title>
+    <title>Module Documentation &#8212; labnode_async v0.16.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="readme.html" title="Readme"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Module Documentation</a></li> 
       </ul>
     </div>  
@@ -226,20 +226,6 @@ node will return to the same state. If not, the node will always come up as disa
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="labnode_async.PidController.get_fallback_update_interval">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_fallback_update_interval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/labnode_async/pid_controller.html#PidController.get_fallback_update_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#labnode_async.PidController.get_fallback_update_interval" title="Permalink to this definition">¶</a></dt>
-<dd><p>The update interval, which is used when running in fallback mode. The return value is in seconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The number of seconds between updates with the backup sensor when running in fallback mode.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="labnode_async.PidController.get_hardware_version">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hardware_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/labnode_async/pid_controller.html#PidController.get_hardware_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#labnode_async.PidController.get_hardware_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the hardware revision of the device. The response is a tuple of ints, that represents the version number.</p>
@@ -377,6 +363,20 @@ Either 0 or 1.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="labnode_async.PidController.get_secondary_pid_update_interval">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_secondary_pid_update_interval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/labnode_async/pid_controller.html#PidController.get_secondary_pid_update_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#labnode_async.PidController.get_secondary_pid_update_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>The update interval, which is used when running in fallback mode. The return value is in seconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of seconds between updates with the backup sensor when running in fallback mode.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -563,18 +563,6 @@ number.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="labnode_async.PidController.set_fallback_update_interval">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_fallback_update_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/labnode_async/pid_controller.html#PidController.set_fallback_update_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#labnode_async.PidController.set_fallback_update_interval" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the update interval, when running in fallback mode. The Controller will feed a value from the internal
-sensor to its PID controller every {value} s.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – The update interval in seconds</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="labnode_async.PidController.set_input">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/labnode_async/pid_controller.html#PidController.set_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#labnode_async.PidController.set_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the input, which is fed to the PID controller. The value is in Q16.16 format.</p>
@@ -701,6 +689,18 @@ In short: If set to <cite>FeedbackDirection.NEGATIVE</cite>, a positive error wi
 <li><p><a class="reference internal" href="#labnode_async.errors.FunctionNotImplementedError" title="labnode_async.errors.FunctionNotImplementedError"><strong>FunctionNotImplementedError</strong></a> – If the firmware version does not support the request.</p></li>
 <li><p><a class="reference internal" href="#labnode_async.errors.InvalidFormatError" title="labnode_async.errors.InvalidFormatError"><strong>InvalidFormatError</strong></a> – If the config_id is not in {0, 1}.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="labnode_async.PidController.set_secondary_pid_update_interval">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_secondary_pid_update_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/labnode_async/pid_controller.html#PidController.set_secondary_pid_update_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#labnode_async.PidController.set_secondary_pid_update_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the update interval, when running in fallback mode using the secondary PID settings.
+The Controller will feed a value from the internal sensor to the secondary PID controller every {value} s.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – The update interval in seconds</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1394,7 +1394,7 @@ for the other option.</p>
         <li class="right" >
           <a href="readme.html" title="Readme"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Module Documentation</a></li> 
       </ul>
     </div>
