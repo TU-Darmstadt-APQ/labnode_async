@@ -121,6 +121,7 @@ class Connection:  # pylint: disable=too-many-instance-attributes
         bytes
             The encoded bytestring
         """
+        self.__logger.debug("Encoding data with COBS: %s", data.hex())
         return cobs.encode(data) + self._SEPARATOR
 
     @staticmethod

@@ -61,7 +61,6 @@ class PidController(Labnode):  # pylint: disable=too-many-public-methods
     __DEVICE_IDENTIFIER = DeviceIdentifier.PID
 
     @classmethod
-    @property
     def device_identifier(cls) -> DeviceIdentifier:
         """The device identifier used to identify the device type"""
         return cls.__DEVICE_IDENTIFIER

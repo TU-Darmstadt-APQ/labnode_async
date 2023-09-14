@@ -50,7 +50,7 @@ class DeviceFactory:
             A Labnode device class to be registered with the factory.
         """
         # We cast device.device_identifier because mypy has problems class properties
-        self.__available_devices[cast(DeviceIdentifier, device.device_identifier)] = device
+        self.__available_devices[cast(DeviceIdentifier, device.device_identifier())] = device
 
     def get(self, device_id: DeviceIdentifier, connection: Connection, *args: Any, **kwargs: Any) -> Labnode:
         """

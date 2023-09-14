@@ -34,7 +34,6 @@ class Labnode(ABC):
     """
 
     @classmethod
-    @property
     @abstractmethod
     def device_identifier(cls) -> DeviceIdentifier:
         """
