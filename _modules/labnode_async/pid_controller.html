@@ -1,18 +1,15 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>labnode_async.pid_controller &#8212; labnode_async v0.16.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <title>labnode_async.pid_controller &#8212; labnode_async v0.16.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=601dbdee" />
+    <script src="../../_static/documentation_options.js?v=ee6890a7"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -25,7 +22,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.pid_controller</a></li> 
       </ul>
@@ -80,9 +77,11 @@
     <span class="kn">from</span> <span class="nn">.connection</span> <span class="kn">import</span> <span class="n">Connection</span>
 
 
-<div class="viewcode-block" id="FeedbackDirection"><a class="viewcode-back" href="../../modules.html#labnode_async.FeedbackDirection">[docs]</a><span class="nd">@unique</span>
+<div class="viewcode-block" id="FeedbackDirection">
+<a class="viewcode-back" href="../../modules.html#labnode_async.FeedbackDirection">[docs]</a>
+<span class="nd">@unique</span>
 <span class="k">class</span> <span class="nc">FeedbackDirection</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The sign of the feedback action of the PID controller. A positive direction means, that a positive disturbance</span>
 <span class="sd">    causes a positive output from the PID. A negative direction causes feedback in the opposing direction. This is the</span>
 <span class="sd">    default and should be selected for most systems.</span>
@@ -92,18 +91,23 @@
     <span class="n">POSITIVE</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="PidController"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController">[docs]</a><span class="k">class</span> <span class="nc">PidController</span><span class="p">(</span><span class="n">Labnode</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-public-methods</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController">[docs]</a>
+<span class="k">class</span> <span class="nc">PidController</span><span class="p">(</span><span class="n">Labnode</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-public-methods</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A Labnode PID controller. This is the API to configure and control the Labnode.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">__DEVICE_IDENTIFIER</span> <span class="o">=</span> <span class="n">DeviceIdentifier</span><span class="o">.</span><span class="n">PID</span>
 
+<div class="viewcode-block" id="PidController.device_identifier">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.device_identifier">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">device_identifier</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeviceIdentifier</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;The device identifier used to identify the device type&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__DEVICE_IDENTIFIER</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The device identifier used to identify the device type&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__DEVICE_IDENTIFIER</span></div>
+
 
     <span class="n">_RAW_TO_UNIT</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PidFunctionID</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="c1"># We need to truncate to 100 %rH according to the datasheet.</span>
@@ -131,8 +135,10 @@
         <span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_MAC_ADDRESS</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">,</span>
     <span class="p">}</span>
 
-<div class="viewcode-block" id="PidController.__init__"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">api_version</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PidController.__init__">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">api_version</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a pid controller. The API version is required to automatically adapt the different api versions.</span>
 
 <span class="sd">        Parameters</span>
@@ -148,12 +154,13 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Labnode at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__test_for_errors</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Test the reply from the device for error messages and raise exceptions accordingly.</span>
 
 <span class="sd">        Parameters</span>
@@ -212,8 +219,10 @@
 
         <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-<div class="viewcode-block" id="PidController.send_multi_request"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.send_multi_request">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_multi_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PidFunctionID</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PidController.send_multi_request">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.send_multi_request">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_multi_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PidFunctionID</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Send one or more requests to the device.</span>
 
 <span class="sd">        Parameters</span>
@@ -257,8 +266,11 @@
             <span class="k">return</span> <span class="n">result</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="PidController.get_software_version"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_software_version">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_software_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_software_version">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_software_version">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_software_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the firmware version running on the device. The response is a tuple of ints, that represents the version</span>
 <span class="sd">        number.</span>
 
@@ -269,8 +281,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SOFTWARE_VERSION</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_hardware_version"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_hardware_version">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_hardware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_hardware_version">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_hardware_version">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_hardware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the hardware revision of the device. The response is a tuple of ints, that represents the version number.</span>
 
 <span class="sd">        Returns</span>
@@ -280,8 +295,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_HARDWARE_VERSION</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_serial"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_serial">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_serial">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_serial">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the serial number of the device.</span>
 
 <span class="sd">        Returns</span>
@@ -291,8 +309,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SERIAL_NUMBER</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_device_temperature"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_device_temperature">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_device_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decimal</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_device_temperature">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_device_temperature">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_device_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decimal</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query the temperature of the onboard sensor.</span>
 
 <span class="sd">        Returns</span>
@@ -302,8 +323,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_BOARD_TEMPERATURE</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_humidity"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_humidity">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_humidity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decimal</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_humidity">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_humidity">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_humidity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decimal</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the humidity as read by the onboard sensor.</span>
 
 <span class="sd">        Returns</span>
@@ -313,8 +337,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_HUMIDITY</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_mac_address"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_mac_address">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_mac_address</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_mac_address">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_mac_address">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_mac_address</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the MAC address used by the ethernet port.</span>
 
 <span class="sd">        Returns</span>
@@ -324,8 +351,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_MAC_ADDRESS</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_mac_address"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_mac_address">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_mac_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mac</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_mac_address">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_mac_address">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_mac_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mac</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the MAC address used by the ethernet port.</span>
 
 <span class="sd">        Parameters</span>
@@ -337,8 +367,11 @@
         <span class="n">mac</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">mac</span><span class="p">)</span>  <span class="c1"># convert to bytearray, this also makes sure, that all values are in range(0, 256)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_MAC_ADDRESS</span><span class="p">,</span> <span class="n">mac</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_uuid"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_uuid">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_uuid">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_uuid">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the universally unique identifier of the node.</span>
 
 <span class="sd">        Returns</span>
@@ -358,8 +391,11 @@
         <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_UUID</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">bytes</span><span class="p">(</span><span class="n">result</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.set_uuid"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_uuid">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_uuid">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_uuid">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the universally unique identifier of the node.</span>
 
 <span class="sd">        Parameters</span>
@@ -378,8 +414,11 @@
             <span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_UUID</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.get_auto_resume"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_auto_resume">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_auto_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_auto_resume">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_auto_resume">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_auto_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query the node, whether is automatically resumes after a reset (intentionally or unintentionally). If set, the</span>
 <span class="sd">        node will return to the same state. If not, the node will always come up as disabled with default settings.</span>
 
@@ -390,8 +429,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_AUTO_RESUME</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_auto_resume"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_auto_resume">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_auto_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_auto_resume">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_auto_resume">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_auto_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the controller to automatically load the previous settings and resume its action.</span>
 
 <span class="sd">        Parameters</span>
@@ -401,8 +443,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_AUTO_RESUME</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.set_lower_output_limit"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_lower_output_limit">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_lower_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_lower_output_limit">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_lower_output_limit">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_lower_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the minimum output of the DAC in bit values.</span>
 
 <span class="sd">        Parameters</span>
@@ -418,10 +463,13 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_LOWER_OUTPUT_LIMIT</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid limit&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid limit&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_lower_output_limit"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_lower_output_limit">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_lower_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_lower_output_limit">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_lower_output_limit">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_lower_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the minimum output value of the DAC.</span>
 
 <span class="sd">        Returns</span>
@@ -431,8 +479,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_LOWER_OUTPUT_LIMIT</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_upper_output_limit"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_upper_output_limit">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_upper_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_upper_output_limit">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_upper_output_limit">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_upper_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the maximum output of the DAC in bit values.</span>
 
 <span class="sd">        Parameters</span>
@@ -448,10 +499,13 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_UPPER_OUTPUT_LIMIT</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid limit&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid limit&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_upper_output_limit"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_upper_output_limit">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_upper_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_upper_output_limit">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_upper_output_limit">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_upper_output_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the maximum output of the DAC in bit values.</span>
 
 <span class="sd">        Returns</span>
@@ -461,8 +515,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_UPPER_OUTPUT_LIMIT</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_timeout"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_timeout">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_timeout">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_timeout">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the timeout, that defines when the controller switches to fallback mode. The time is measured in s.</span>
 
 <span class="sd">        Parameters</span>
@@ -473,8 +530,11 @@
         <span class="k">assert</span> <span class="n">timeout</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_TIMEOUT</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">timeout</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.get_timeout"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_timeout">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_timeout">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_timeout">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the time, that must pass between updates, before the controller switches to fallback mode.</span>
 
 <span class="sd">        Returns</span>
@@ -484,8 +544,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_TIMEOUT</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span></div>
 
-<div class="viewcode-block" id="PidController.set_dac_gain"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_dac_gain">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_dac_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_dac_gain">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_dac_gain">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_dac_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the gain of the DAC to x2. This will increase the output voltage range from 0..5V to 0..10V.</span>
 
 <span class="sd">        Parameters</span>
@@ -495,8 +558,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_GAIN</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">enable</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.is_dac_gain_enabled"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.is_dac_gain_enabled">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_dac_gain_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.is_dac_gain_enabled">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.is_dac_gain_enabled">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_dac_gain_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return True if the DAC output goes from 0-10 V. False if the DAC gain is disabled and the output is 0-5 V.</span>
 
 <span class="sd">        Returns</span>
@@ -506,8 +572,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_GAIN</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_pid_feedback_direction"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_pid_feedback_direction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_pid_feedback_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feedback</span><span class="p">:</span> <span class="n">FeedbackDirection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_pid_feedback_direction">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_pid_feedback_direction">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_pid_feedback_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feedback</span><span class="p">:</span> <span class="n">FeedbackDirection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the sign of the pid output. This needs to be adjusted according to the actuator used to</span>
 <span class="sd">        control the plant. Typically, it is assumed, that the feedback is negative. For example, when</span>
 <span class="sd">        dealing with e.g. temperature control, this means, that if the temperature is too high,</span>
@@ -522,8 +591,11 @@
         <span class="n">feedback</span> <span class="o">=</span> <span class="n">FeedbackDirection</span><span class="p">(</span><span class="n">feedback</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_DIRECTION</span><span class="p">,</span> <span class="n">feedback</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_pid_feedback_direction"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_pid_feedback_direction">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_pid_feedback_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FeedbackDirection</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_pid_feedback_direction">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_pid_feedback_direction">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_pid_feedback_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FeedbackDirection</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the sign of the pid output. If set to `FeedbackDirection.NEGATIVE`, a positive error will result in a</span>
 <span class="sd">        negative plant response.</span>
 
@@ -534,8 +606,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">FeedbackDirection</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_DIRECTION</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.set_output"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_output">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_output">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_output">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the output value of the DAC. This function only works, when the controller mode is set to disabled (manual).</span>
 <span class="sd">        Use `set_enabled(false)`.</span>
 
@@ -546,8 +621,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_OUTPUT</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.get_output"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_output">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_output">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_output">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Queries the output value of the DAC.</span>
 
 <span class="sd">        Returns</span>
@@ -557,8 +635,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_OUTPUT</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_enabled"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_enabled">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_enabled">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_enabled">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the PID controller to enabled/automatic or disabled/manual mode.</span>
 
 <span class="sd">        Parameters</span>
@@ -568,8 +649,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_ENABLED</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">enabled</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PidController.is_enabled"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.is_enabled">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.is_enabled">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.is_enabled">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Queries the state of the PID controller.</span>
 
 <span class="sd">        Returns</span>
@@ -579,8 +663,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_ENABLED</span><span class="p">)</span></div>
 
+
     <span class="k">async</span> <span class="k">def</span> <span class="nf">__set_kx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function_id</span><span class="p">:</span> <span class="n">PidFunctionID</span><span class="p">,</span> <span class="n">kx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the PID K{p,i,d} parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format</span>
 
 <span class="sd">        Parameters</span>
@@ -604,10 +689,12 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">function_id</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">kx</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid PID constant&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid PID constant&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="PidController.set_kp"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_kp">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_kp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PidController.set_kp">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_kp">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_kp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -623,8 +710,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_kx</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_SECONDARY_KP</span><span class="p">,</span> <span class="n">kp</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_kp"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_kp">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_kp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_kp">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_kp">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_kp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the PID Kp parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -648,8 +738,11 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_KP</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is only supported in api version &gt;= 0.11.0&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_ki"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_ki">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ki</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ki</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_ki">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_ki">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ki</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ki</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -665,8 +758,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_kx</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_SECONDARY_KI</span><span class="p">,</span> <span class="n">ki</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_ki"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_ki">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_ki</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_ki">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_ki">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_ki</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the PID Ki parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -690,8 +786,11 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_KI</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is only supported in api version &gt;= 0.11.0&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_kd"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_kd">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_kd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_kd">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_kd">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_kd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pylint: disable=invalid-name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -707,8 +806,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_kx</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_SECONDARY_KD</span><span class="p">,</span> <span class="n">kd</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_kd"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_kd">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_kd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_kd">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_kd">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_kd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the PID Kd parameter. The Kp, Ki, Kd parameters are stored in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -732,8 +834,11 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_KD</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is only supported in api version &gt;= 0.11.0&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_input"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_input">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">return_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_input">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_input">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">return_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the input, which is fed to the PID controller. The value is in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -762,8 +867,11 @@
 
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.set_setpoint"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_setpoint">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_setpoint">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_setpoint">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the PID setpoint. The value is in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -790,10 +898,13 @@
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_SECONDARY_SETPOINT</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is only supported in api version &gt;= 0.11.0&quot;</span>
                     <span class="p">)</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid setpoint&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid setpoint&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_setpoint"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_setpoint">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_setpoint">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_setpoint">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the PID setpoint. The value is in Q16.16 format.</span>
 
 <span class="sd">        Parameters</span>
@@ -822,8 +933,11 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_SETPOINT</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is only supported in api version &gt;= 0.11.0&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_secondary_config"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_secondary_config">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_secondary_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_secondary_config">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_secondary_config">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_secondary_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the configuration used when running in fallback mode.</span>
 
 <span class="sd">        Parameters</span>
@@ -846,10 +960,13 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_SECONDARY_PID_PARAMETER_SET</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">config_id</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid configuration set. Use either 0 or 1.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid configuration set. Use either 0 or 1.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_secondary_config"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_secondary_config">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_secondary_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_secondary_config">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_secondary_config">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_secondary_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the configuration id used when running in fallback mode.</span>
 
 <span class="sd">        Returns</span>
@@ -864,8 +981,11 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_SECONDARY_PID_PARAMETER_SET</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_secondary_pid_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_secondary_pid_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_secondary_pid_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_secondary_pid_update_interval">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_secondary_pid_update_interval">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_secondary_pid_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the update interval, when running in fallback mode using the secondary PID settings.</span>
 <span class="sd">        The Controller will feed a value from the internal sensor to the secondary PID controller every {value} s.</span>
 
@@ -878,10 +998,13 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_FALLBACK_UPDATE_INTERVAL</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid calibration offset&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid calibration offset&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_secondary_pid_update_interval"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_secondary_pid_update_interval">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_secondary_pid_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_secondary_pid_update_interval">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_secondary_pid_update_interval">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_secondary_pid_update_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The update interval, which is used when running in fallback mode. The return value is in seconds.</span>
 
 <span class="sd">        Returns</span>
@@ -891,20 +1014,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_FALLBACK_UPDATE_INTERVAL</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span></div>
 
-<div class="viewcode-block" id="PidController.reset"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.reset">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.reset">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets the device. This will trigger a hardware reset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">RESET</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.reset_settings"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.reset_settings">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.reset_settings">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.reset_settings">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets the device to default values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">RESET_SETTINGS</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.set_serial"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_serial">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.set_serial">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.set_serial">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the serial number of the device</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -919,10 +1051,13 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">SET_SERIAL_NUMBER</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">serial</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">InvalidFormatError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid serial number&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid serial number&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="PidController.get_active_connection_count"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_active_connection_count">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_active_connection_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_active_connection_count">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_active_connection_count">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_active_connection_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the number of open sockets.</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -940,8 +1075,11 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_function_id</span><span class="p">(</span><span class="n">PidFunctionID</span><span class="o">.</span><span class="n">GET_ACTIVE_CONNECTION_COUNT</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="PidController.get_by_function_id"><a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_by_function_id">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_by_function_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function_id</span><span class="p">:</span> <span class="n">PidFunctionID</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidController.get_by_function_id">
+<a class="viewcode-back" href="../../modules.html#labnode_async.PidController.get_by_function_id">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_by_function_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function_id</span><span class="p">:</span> <span class="n">PidFunctionID</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query a value by function id, instead of calling the named function.</span>
 
 <span class="sd">        Parameters</span>
@@ -961,7 +1099,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">function_id</span> <span class="o">=</span> <span class="n">PidFunctionID</span><span class="p">(</span><span class="n">function_id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">InvalidCommandError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Command </span><span class="si">{</span><span class="n">function_id</span><span class="si">}</span><span class="s2"> is invalid.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span>
+            <span class="k">raise</span> <span class="n">InvalidCommandError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Command </span><span class="si">{</span><span class="n">function_id</span><span class="si">}</span><span class="s2"> is invalid.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
         <span class="k">assert</span> <span class="n">function_id</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span>  <span class="c1"># all getter have negative ids</span>
 
         <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_single_request</span><span class="p">(</span><span class="n">function_id</span><span class="p">)</span>
@@ -969,7 +1107,9 @@
         <span class="k">if</span> <span class="n">function_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__raw_to_unit</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__raw_to_unit</span><span class="p">[</span><span class="n">function_id</span><span class="p">](</span><span class="n">result</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">result</span></div></div>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -1001,14 +1141,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.pid_controller</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2022, Patrick Baus.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+    &#169; Copyright 2022, Patrick Baus.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

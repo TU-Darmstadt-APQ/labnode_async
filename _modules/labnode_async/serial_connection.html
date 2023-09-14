@@ -1,18 +1,15 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>labnode_async.serial_connection &#8212; labnode_async v0.16.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <title>labnode_async.serial_connection &#8212; labnode_async v0.16.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=601dbdee" />
+    <script src="../../_static/documentation_options.js?v=ee6890a7"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -25,7 +22,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.serial_connection</a></li> 
       </ul>
@@ -67,35 +64,39 @@
 <span class="kn">from</span> <span class="nn">.devices</span> <span class="kn">import</span> <span class="n">FunctionID</span>
 
 
-<div class="viewcode-block" id="SerialConnection"><a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection">[docs]</a><span class="k">class</span> <span class="nc">SerialConnection</span><span class="p">(</span><span class="n">Connection</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SerialConnection">
+<a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection">[docs]</a>
+<span class="k">class</span> <span class="nc">SerialConnection</span><span class="p">(</span><span class="n">Connection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The serial connection is one of the two types of connections supported by the labnodes. See :class:`~IPConnection`</span>
 <span class="sd">    for the other option.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">tty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The serial endpoint of the connection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tty_kwargs</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">baudrate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The baudrate of the serial connection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tty_kwargs</span><span class="p">[</span><span class="s2">&quot;baudrate&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A string representation of the connection endpoint</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tty</span>
 
-<div class="viewcode-block" id="SerialConnection.__init__"><a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">baudrate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">115200</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SerialConnection.__init__">
+<a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">baudrate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">115200</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        url: str</span>
@@ -119,13 +120,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>  <span class="c1"># Only log really important messages</span></div>
 
+
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;SerialConnection(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-<div class="viewcode-block" id="SerialConnection.send_request"><a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection.send_request">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span>
+<div class="viewcode-block" id="SerialConnection.send_request">
+<a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection.send_request">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">FunctionID</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">response_expected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Send a request to the Labnode</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -142,10 +146,13 @@
             <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send_request</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">response_expected</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">NotConnectedError</span><span class="p">:</span>
             <span class="c1"># reraise with different message</span>
-            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="s2">&quot;Labnode serial connection not connected.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="bp">None</span></div>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="s2">&quot;Labnode serial connection not connected.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="SerialConnection.connect"><a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SerialConnection.connect">
+<a class="viewcode-back" href="../../modules.html#labnode_async.SerialConnection.connect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Connect to the Labnode using a serial connection and start the connection listener.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_lock</span><span class="p">:</span>
@@ -154,7 +161,9 @@
 
             <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">serial_asyncio</span><span class="o">.</span><span class="n">open_serial_connection</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__tty_kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Labnode serial connection established to port &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tty</span><span class="p">)</span>
-            <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">writer</span><span class="p">)</span></div></div>
+            <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">writer</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -186,14 +195,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.serial_connection</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2022, Patrick Baus.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+    &#169; Copyright 2022, Patrick Baus.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

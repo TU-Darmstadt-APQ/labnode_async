@@ -1,19 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Readme &#8212; labnode_async v0.16.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>Readme &#8212; labnode_async v0.16.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=601dbdee" />
+    <script src="_static/documentation_options.js?v=ee6890a7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Module Documentation" href="modules.html" />
@@ -34,7 +31,7 @@
         <li class="right" >
           <a href="index.html" title="Home"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Readme</a></li> 
       </ul>
     </div>  
@@ -45,34 +42,34 @@
           <div class="body" role="main">
             
   <section id="readme">
-<h1>Readme<a class="headerlink" href="#readme" title="Permalink to this heading">¶</a></h1>
+<h1>Readme<a class="headerlink" href="#readme" title="Link to this heading">¶</a></h1>
 <p><a class="reference external" href="https://github.com/PatrickBaus/labnode_async/actions/workflows/pylint.yml"><img alt="pylint" src="https://github.com/PatrickBaus/labnode_async/actions/workflows/pylint.yml/badge.svg" /></a>
 <a class="reference external" href="https://pypi.org/project/labnode_async/"><img alt="PyPI" src="https://img.shields.io/pypi/v/labnode_async" /></a>
 <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/labnode_async" />
 <img alt="PyPI - Status" src="https://img.shields.io/pypi/status/labnode_async" />
 <a class="reference external" href="https://github.com/psf/black"><img alt="code style" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a></p>
 <section id="labnode">
-<h2>LabNode<a class="headerlink" href="#labnode" title="Permalink to this heading">¶</a></h2>
+<h2>LabNode<a class="headerlink" href="#labnode" title="Link to this heading">¶</a></h2>
 <p>This is the Python3 AsyncIO API library for the <a class="reference external" href="https://github.com/TU-Darmstadt-APQ/Labnode_PID">Labnode</a> system.</p>
 <p>The library is fully type-hinted.</p>
 <section id="documentation">
-<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading">¶</a></h3>
+<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h3>
 <p>The full documentation can be found on GitHub Pages:
 <a class="reference external" href="https://patrickbaus.github.io/labnode_async/">https://patrickbaus.github.io/labnode_async/</a>. I use the
 <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpydoc</a> style for documentation and
 <a class="reference external" href="https://www.sphinx-doc.org/en/master/index.html">Sphinx</a> for compiling it.</p>
 </section>
 <section id="setup">
-<h3>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h3>
+<h3>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h3>
 <p>To install the library in a virtual environment (always use venvs with every project):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m venv env  <span class="c1"># virtual environment, optional</span>
-<span class="nb">source</span> env/bin/activate
-pip install labnode-async
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>env<span class="w">  </span><span class="c1"># virtual environment, optional</span>
+<span class="nb">source</span><span class="w"> </span>env/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>labnode-async
 </pre></div>
 </div>
 </section>
 <section id="usage">
-<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h3>
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h3>
 <p>This library makes use of asynchronous context managers to hide all connection related stuff and
 also handle cleanup. By the way: Context managers are great!</p>
 <p>Connect to the remote endpoint, and it will automatically enumerate the Labnode and create the correct device.</p>
@@ -87,18 +84,18 @@ also handle cleanup. By the way: Context managers are great!</p>
 <p>See <a class="reference external" href="https://github.com/PatrickBaus/labnode_async/blob/master/examples/">examples/</a> for more working examples.</p>
 </section>
 <section id="versioning">
-<h3>Versioning<a class="headerlink" href="#versioning" title="Permalink to this heading">¶</a></h3>
+<h3>Versioning<a class="headerlink" href="#versioning" title="Link to this heading">¶</a></h3>
 <p>I use <a class="reference external" href="http://semver.org/">SemVer</a> for versioning. For the versions available, see the
 <a class="reference external" href="https://github.com/PatrickBaus/labnode_async/tags">tags of this repository</a>.</p>
 </section>
 <section id="authors">
-<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">¶</a></h3>
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>Patrick Baus</strong> - <em>Initial work</em> - <a class="reference external" href="https://github.com/PatrickBaus">PatrickBaus</a></p></li>
 </ul>
 </section>
 <section id="license">
-<h3>License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h3>
+<h3>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h3>
 <p>This project is licensed under the GPL v3 license - see the
 <a class="reference external" href="https://github.com/PatrickBaus/labnode_async/blob/master/LICENSE">LICENSE</a> file for details.</p>
 </section>
@@ -176,13 +173,13 @@ also handle cleanup. By the way: Context managers are great!</p>
         <li class="right" >
           <a href="index.html" title="Home"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Readme</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2022, Patrick Baus.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+    &#169; Copyright 2022, Patrick Baus.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

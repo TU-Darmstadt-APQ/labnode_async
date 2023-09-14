@@ -1,18 +1,15 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>labnode_async.errors &#8212; labnode_async v0.16.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <title>labnode_async.errors &#8212; labnode_async v0.16.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=601dbdee" />
+    <script src="../../_static/documentation_options.js?v=ee6890a7"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -25,7 +22,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.errors</a></li> 
       </ul>
@@ -58,46 +55,67 @@
 <span class="sd">&quot;&quot;&quot;Custom errors raised by Labnodes.&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="LabnodeException"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.LabnodeException">[docs]</a><span class="k">class</span> <span class="nc">LabnodeException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="LabnodeException">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.LabnodeException">[docs]</a>
+<span class="k">class</span> <span class="nc">LabnodeException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base exception class for all errors thrown by labnode_async.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="PidNotInitializedError"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.PidNotInitializedError">[docs]</a><span class="k">class</span> <span class="nc">PidNotInitializedError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PidNotInitializedError">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.PidNotInitializedError">[docs]</a>
+<span class="k">class</span> <span class="nc">PidNotInitializedError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised by the controller if the PID parameters have not been initialized, yet the controller was turned on</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="InvalidReplyError"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidReplyError">[docs]</a><span class="k">class</span> <span class="nc">InvalidReplyError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InvalidReplyError">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidReplyError">[docs]</a>
+<span class="k">class</span> <span class="nc">InvalidReplyError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised if the Reply from the Labnode matched our request id, yet did not contain a reply to the request made.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="InvalidModeError"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidModeError">[docs]</a><span class="k">class</span> <span class="nc">InvalidModeError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InvalidModeError">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidModeError">[docs]</a>
+<span class="k">class</span> <span class="nc">InvalidModeError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised if the labnode cannot execute the command, because it is not set to the right operating mode.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="FunctionNotImplementedError"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.FunctionNotImplementedError">[docs]</a><span class="k">class</span> <span class="nc">FunctionNotImplementedError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FunctionNotImplementedError">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.FunctionNotImplementedError">[docs]</a>
+<span class="k">class</span> <span class="nc">FunctionNotImplementedError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised if the Labnode recognises the command, but the function is not supported in this firmware.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="InvalidCommandError"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidCommandError">[docs]</a><span class="k">class</span> <span class="nc">InvalidCommandError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InvalidCommandError">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidCommandError">[docs]</a>
+<span class="k">class</span> <span class="nc">InvalidCommandError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised if the Labnode does not recognise the command.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="InvalidFormatError"><a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidFormatError">[docs]</a><span class="k">class</span> <span class="nc">InvalidFormatError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InvalidFormatError">
+<a class="viewcode-back" href="../../modules.html#labnode_async.errors.InvalidFormatError">[docs]</a>
+<span class="k">class</span> <span class="nc">InvalidFormatError</span><span class="p">(</span><span class="n">LabnodeException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised if the request does not have the correct formatting. Typically, the wrong datatype.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -129,14 +147,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">labnode_async v0.16.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">labnode_async.errors</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2022, Patrick Baus.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+    &#169; Copyright 2022, Patrick Baus.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
