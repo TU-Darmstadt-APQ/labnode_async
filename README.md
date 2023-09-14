@@ -41,7 +41,7 @@ See [examples/](https://github.com/PatrickBaus/labnode_async/blob/master/example
 
 ## Versioning
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the
-[tags of this repository](../..//tags).
+[tags of this repository](../../tags).
 
 ## Authors
 * **Patrick Baus** - *Initial work* - [PatrickBaus](https://github.com/PatrickBaus)
