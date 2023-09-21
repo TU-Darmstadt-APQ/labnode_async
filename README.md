@@ -2,6 +2,7 @@
 [![PyPI](https://img.shields.io/pypi/v/labnode_async)](https://pypi.org/project/labnode_async/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/labnode_async)
 ![PyPI - Status](https://img.shields.io/pypi/status/labnode_async)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 [![code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 # LabNode
 This is the Python3 asyncio API library for the [Labnode](https://github.com/TU-Darmstadt-APQ/Labnode_PID) system.
