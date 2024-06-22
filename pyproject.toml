@@ -1,5 +1,5 @@
 [project]
-name = "labnode_async"
+name = "labnode-async"
 authors = [
   { name="Patrick Baus", email="patrick.baus@physik.tu-darmstadt.de" },
 ]
